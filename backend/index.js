@@ -24,7 +24,7 @@ app.use(
     origin:
       process.env.NODE_ENV === "production"
         ? [process.env.FRONTEND_URL]
-        : ["http://localhost:5173", "https://shop-x-teal.vercel.app/"],
+        : ["https://shop-x-lac.vercel.app/", "https://shop-x-teal.vercel.app/"],
     credentials: true,
   }),
 );
