@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { shopDataContext } from '../context/ShopContext'
-import { authDataContext } from '../context/authContext'
+import { authDataContext } from '../context/AuthContext'
 import axios from 'axios'
 import { FiPackage } from 'react-icons/fi'
 import { TbArrowBackUp } from 'react-icons/tb'

@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react'
 import { IoEyeOutline, IoEye, IoClose } from "react-icons/io5";
-import { authDataContext } from '../context/authContext';
+import { authDataContext } from '../context/AuthContext';
 import { userDataContext } from '../context/UserContext';
 import axios from 'axios';
 import { signInWithPopup } from 'firebase/auth';
