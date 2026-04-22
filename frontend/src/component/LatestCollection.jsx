@@ -24,8 +24,8 @@ function LatestCollection() {
     return (
         <section className='w-full bg-white py-[60px] px-[20px]'>
             <div className='max-w-[1200px] mx-auto'>
-                <div className='flex items-center justify-between mb-[20px]'>
-                    <div className='text-left'>
+                <div className='flex flex-col sm:flex-row sm:items-center justify-between mb-[20px] gap-[14px]'>
+                    <div className='text-center sm:text-left flex flex-col items-center sm:items-start'>
                         <Title text1={"LATEST"} text2={"COLLECTIONS"} color='text-gray-800' color2='text-black' />
                         <p className='text-gray-500 text-[14px] max-w-[480px] -mt-2'>
                             Step Into Style – New Collection Dropping This Season!
@@ -43,9 +43,9 @@ function LatestCollection() {
                 </div>
                 
                 {/* 2-Row Horizontal Scroll Container */}
-                <div ref={scrollRef} className='grid grid-rows-2 grid-flow-col overflow-x-auto gap-[20px] pb-[20px] snap-x snap-mandatory no-scrollbar'>
+                <div ref={scrollRef} className='grid grid-rows-2 grid-flow-col overflow-x-auto gap-[20px] pb-[20px] snap-x snap-mandatory no-scrollbar place-items-center'>
                     {latestProducts.map((item, index) => (
-                        <div key={index} className='w-[160px] sm:w-[200px] lg:w-[260px] snap-start'>
+                        <div key={index} className='w-[160px] sm:w-[200px] lg:w-[260px] snap-start flex justify-center'>
                             <Card name={item.name} image={item.image1} id={item._id} price={item.price} />
                         </div>
                     ))}
