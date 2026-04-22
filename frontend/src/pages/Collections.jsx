@@ -154,7 +154,7 @@ function Collections() {
                                 <p className='text-[13px] mt-[4px]'>Try adjusting your filters</p>
                             </div>
                         ) : (
-                            <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-[14px] md:gap-[18px]'>
+                            <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-[14px] md:gap-[18px] justify-items-center'>
                                 {filterProduct.map((item, index) => (
                                     <Card key={index} id={item._id} name={item.name} price={item.price} image={item.image1} />
                                 ))}

@@ -17,7 +17,7 @@ function Card({ name, image, id, price }) {
                     className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
                 />
             </div>
-            <div className='p-[14px] flex-1'>
+            <div className='p-[14px] flex-1 text-center'>
                 <p className='text-gray-800 text-[14px] font-semibold leading-snug line-clamp-2'>{name}</p>
                 <p className='text-gray-500 text-[13px] mt-[4px] font-medium'>{currency} {price}</p>
             </div>
