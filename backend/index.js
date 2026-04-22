@@ -23,11 +23,14 @@ const productionOrigins = [
   process.env.ADMIN_URL,
   process.env.FRONTEND_URL_2,
   process.env.ADMIN_URL_2,
+  "https://shop-x-lac.vercel.app",
+  "https://shop-x-teal.vercel.app",
 ].filter(Boolean);
+const normalizeOrigin = (value) => value.replace(/\/$/, "").toLowerCase();
 const allowedOrigins =
   process.env.NODE_ENV === "production"
-    ? productionOrigins
-    : [...localOrigins, ...productionOrigins];
+    ? productionOrigins.map(normalizeOrigin)
+    : [...localOrigins, ...productionOrigins].map(normalizeOrigin);
 
 app.use(express.json());
 app.use(cookieParser());
@@ -35,7 +38,7 @@ app.use(
   cors({
     origin: (origin, callback) => {
       // Allow non-browser requests (no Origin header) and configured clients.
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.includes(normalizeOrigin(origin))) {
         return callback(null, true);
       }
       return callback(new Error("Not allowed by CORS"));
