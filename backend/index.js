@@ -57,7 +57,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.set("trust proxy", 1);
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 
 app.get("/", (req, res) => {
   res.status(200).send("Server is running");
