@@ -17,14 +17,29 @@ let port = process.env.PORT || 6000;
 
 let app = express();
 
+const localOrigins = ["http://localhost:5173", "http://localhost:5174"];
+const productionOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.ADMIN_URL,
+  process.env.FRONTEND_URL_2,
+  process.env.ADMIN_URL_2,
+].filter(Boolean);
+const allowedOrigins =
+  process.env.NODE_ENV === "production"
+    ? productionOrigins
+    : [...localOrigins, ...productionOrigins];
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === "production"
-        ? [process.env.FRONTEND_URL]
-        : ["https://shop-x-lac.vercel.app/", "https://shop-x-teal.vercel.app/"],
+    origin: (origin, callback) => {
+      // Allow non-browser requests (no Origin header) and configured clients.
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   }),
 );
