@@ -17,7 +17,7 @@ let port = process.env.PORT || 6000;
 
 let app = express();
 
-const localOrigins = ["https://shopx-6u3e.onrender.com", "http://localhost:5174"];
+const localOrigins = ["https://shopx-6u3e.onrender.com", "https://shopx-admin-ktdc.onrender.com"];
 const productionOrigins = [
   process.env.FRONTEND_URL,
   process.env.ADMIN_URL,
