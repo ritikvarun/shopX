@@ -43,9 +43,9 @@ function BestSeller() {
                 </div>
 
                 {/* 2-Row Horizontal Scroll Container */}
-                <div ref={scrollRef} className='grid grid-rows-2 grid-flow-col overflow-x-auto gap-[20px] pb-[20px] snap-x snap-mandatory no-scrollbar place-items-center'>
+                <div ref={scrollRef} className='grid grid-rows-2 grid-flow-col auto-cols-max overflow-x-auto gap-[20px] pb-[20px] snap-x snap-mandatory no-scrollbar'>
                     {bestSeller.map((item, index) => (
-                        <div key={index} className='w-[160px] sm:w-[200px] lg:w-[260px] snap-start flex justify-center'>
+                        <div key={index} className='w-[160px] sm:w-[200px] lg:w-[260px] snap-start'>
                             <Card name={item.name} id={item._id} price={item.price} image={item.image1} />
                         </div>
                     ))}
