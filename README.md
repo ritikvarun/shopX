@@ -230,10 +230,4 @@ npm run dev
 
 ---
 
-## 📄 License
-
-This project is licensed under the **ISC License**.
-
----
-
-<p align="center">Made with ❤️ by the ShopX Team</p>
+<p align="center">Made with ❤️ by Ritik Varun</p>
