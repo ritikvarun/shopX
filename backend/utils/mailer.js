@@ -8,20 +8,15 @@ const resend = new Resend(process.env.RESEND_API_KEY || 're_temp_placeholder_key
 // ── Helper: send email safely (never crashes server) ─────────
 const sendMail = async (options) => {
     try {
-        let fromEmail = options.from;
-        if (!fromEmail || fromEmail.includes("undefined") || fromEmail.includes("<>")) {
-            fromEmail = `"ShopX" <onboarding@resend.dev>`;
-        }
-
         const response = await resend.emails.send({
-            from: fromEmail,
+            from: 'ShopX <onboarding@resend.dev>',
             to: options.to,
             subject: options.subject,
             html: options.html
         })
 
         if (response.error) {
-            console.error(`❌ Email failed to ${options.to}:`, response.error.message || response.error)
+            console.error(`❌ Email failed to ${options.to}:`, JSON.stringify(response.error))
         } else {
             console.log(`✅ Email sent to: ${options.to} (ID: ${response.data?.id})`)
         }
