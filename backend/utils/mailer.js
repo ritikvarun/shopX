@@ -1,21 +1,30 @@
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 import dotenv from 'dotenv'
 dotenv.config()
 
-// ── Transporter ──────────────────────────────────────────────
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-})
+// ── Resend Initialization ─────────────────────────────────────
+const resend = new Resend(process.env.RESEND_API_KEY || 're_temp_placeholder_key')
 
 // ── Helper: send email safely (never crashes server) ─────────
 const sendMail = async (options) => {
     try {
-        await transporter.sendMail(options)
-        console.log(`✅ Email sent to: ${options.to}`)
+        let fromEmail = options.from;
+        if (!fromEmail || fromEmail.includes("undefined") || fromEmail.includes("<>")) {
+            fromEmail = `"ShopX" <onboarding@resend.dev>`;
+        }
+
+        const response = await resend.emails.send({
+            from: fromEmail,
+            to: options.to,
+            subject: options.subject,
+            html: options.html
+        })
+
+        if (response.error) {
+            console.error(`❌ Email failed to ${options.to}:`, response.error.message || response.error)
+        } else {
+            console.log(`✅ Email sent to: ${options.to} (ID: ${response.data?.id})`)
+        }
     } catch (err) {
         console.error(`❌ Email failed to ${options.to}:`, err.message)
     }
