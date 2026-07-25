@@ -3,15 +3,19 @@ import fs from 'fs'
 
 
 const uploadOnCloudinary = async (filePath, folderName = "shopx") => {
-    const cloudName = process.env.CLOUDINARY_NAME || process.env.CLOUDINARY_CLOUD_NAME;
-    const apiKey = process.env.CLOUDINARY_API_KEY;
-    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+    const cloudName = process.env.CLOUDINARY_NAME || process.env.CLOUDINARY_CLOUD_NAME || process.env.CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY || process.env.API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET || process.env.API_SECRET;
 
-    cloudinary.config({ 
-        cloud_name: cloudName, 
-        api_key: apiKey, 
-        api_secret: apiSecret 
-    });
+    if (process.env.CLOUDINARY_URL) {
+        cloudinary.config({ cloudinary_url: process.env.CLOUDINARY_URL });
+    } else {
+        cloudinary.config({ 
+            cloud_name: cloudName, 
+            api_key: apiKey, 
+            api_secret: apiSecret 
+        });
+    }
 
     try {
         if(!filePath){
@@ -19,7 +23,12 @@ const uploadOnCloudinary = async (filePath, folderName = "shopx") => {
             return null;
         }
 
-        console.log(`Cloudinary: Uploading file '${filePath}' to folder '${folderName}'...`);
+        if (!cloudName && !process.env.CLOUDINARY_URL) {
+            console.error("Cloudinary Error: No Cloud Name found in env! Check CLOUDINARY_NAME / CLOUDINARY_CLOUD_NAME");
+            return null;
+        }
+
+        console.log(`Cloudinary: Uploading file '${filePath}' to Cloud Name '${cloudName}' in folder '${folderName}'...`);
 
         const uploadResult = await cloudinary.uploader.upload(filePath, {
             folder: folderName,
@@ -28,7 +37,7 @@ const uploadOnCloudinary = async (filePath, folderName = "shopx") => {
             resource_type: "auto"
         });
 
-        console.log("Cloudinary Upload Success! Secure URL:", uploadResult.secure_url);
+        console.log(`Cloudinary Upload Success to [${cloudName}]! Secure URL:`, uploadResult.secure_url);
 
         try{ fs.unlinkSync(filePath) } catch(e){ /* ignore unlink errors */ }
         return uploadResult.secure_url;
