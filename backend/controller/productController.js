@@ -36,10 +36,10 @@ export const addProduct = async (req,res) => {
             return res.status(400).json({message:`Missing file fields: ${missing.join(', ')}`})
         }
 
-        let image1 = await uploadOnCloudinary(image1Path)
-        let image2 = await uploadOnCloudinary(image2Path)
-        let image3 = await uploadOnCloudinary(image3Path)
-        let image4 = await uploadOnCloudinary(image4Path)
+        let image1 = await uploadOnCloudinary(image1Path, "shopx")
+        let image2 = await uploadOnCloudinary(image2Path, "shopx")
+        let image3 = await uploadOnCloudinary(image3Path, "shopx")
+        let image4 = await uploadOnCloudinary(image4Path, "shopx")
 
         if(!image1 || !image2 || !image3 || !image4){
             return res.status(500).json({message:"Upload failed for one or more images"})
