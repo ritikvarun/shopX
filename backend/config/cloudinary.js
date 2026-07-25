@@ -2,7 +2,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs'
 
 
-const uploadOnCloudinary = async (filePath) => {
+const uploadOnCloudinary = async (filePath, folderName = "shopx") => {
     cloudinary.config({ 
         cloud_name: process.env.CLOUDINARY_NAME, 
         api_key: process.env.CLOUDINARY_API_KEY , 
@@ -12,7 +12,10 @@ const uploadOnCloudinary = async (filePath) => {
         if(!filePath){
             return null
         }
-        const uploadResult = await cloudinary.uploader.upload(filePath)
+        const uploadResult = await cloudinary.uploader.upload(filePath, {
+            folder: folderName,
+            resource_type: "auto"
+        })
         try{ fs.unlinkSync(filePath) } catch(e){ /* ignore unlink errors */ }
         return uploadResult.secure_url
     } catch (error) {
@@ -20,6 +23,5 @@ const uploadOnCloudinary = async (filePath) => {
         console.log("Cloudinary upload error:", error)
         return null
     }
-    
 }
 export default uploadOnCloudinary
