@@ -20,7 +20,11 @@ function UserContext({children}) {
    const getCurrentUser = async () => {
         try {
             console.log("Fetching current user from:", serverUrl + "/api/user/getcurrentuser")
-            let result = await axios.get(serverUrl + "/api/user/getcurrentuser",{withCredentials:true})
+            const token = localStorage.getItem("token")
+            let result = await axios.get(serverUrl + "/api/user/getcurrentuser", {
+                withCredentials: true,
+                headers: token ? { Authorization: `Bearer ${token}` } : {}
+            })
 
             setUserData(result.data)
             localStorage.setItem("userData", JSON.stringify(result.data))
@@ -33,6 +37,7 @@ function UserContext({children}) {
             if(error.response?.status === 401){
                 setUserData(null)
                 localStorage.removeItem("userData")
+                localStorage.removeItem("token")
             }
             setLoading(false)
         }

@@ -33,7 +33,8 @@ export const registration = async (req,res) => {
     const user = await User.create({name,email,password:hashPassword})
     let token = await genToken(user._id)
     res.cookie("token", token, cookieOptions)
-    return res.status(201).json(user)
+    const userObj = user.toObject ? user.toObject() : user
+    return res.status(201).json({ ...userObj, token })
   } catch (error) {
     console.log("registration error")
     return res.status(500).json({message:`registration error ${error}`})
@@ -55,7 +56,8 @@ export const login = async (req,res) => {
         }
         let token = await genToken(user._id)
         res.cookie("token", token, cookieOptions)
-        return res.status(201).json(user)
+        const userObj = user.toObject ? user.toObject() : user
+        return res.status(201).json({ ...userObj, token })
 
     } catch (error) {
          console.log("login error")
@@ -92,7 +94,8 @@ export const googleLogin = async (req,res) => {
        
         let token = await genToken(user._id)
         res.cookie("token", token, cookieOptions)
-        return res.status(200).json(user)
+        const userObj = user.toObject ? user.toObject() : user
+        return res.status(200).json({ ...userObj, token })
 
     } catch (error) {
          console.log("googleLogin error")
@@ -108,7 +111,7 @@ export const adminLogin = async (req,res) => {
         if(email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD){
         let token = await genToken1(email)
         res.cookie("token", token, adminCookieOptions)
-        return res.status(200).json(token)
+        return res.status(200).json({ token })
         }
         return res.status(400).json({message:"Invaild creadintials"})
 

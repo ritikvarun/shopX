@@ -3,7 +3,14 @@ import jwt from 'jsonwebtoken'
 
 const isAuth = async (req,res,next) => {
     try {
-        let {token} = req.cookies
+        let token = req.cookies?.token
+        if (!token && req.headers.authorization) {
+            if (req.headers.authorization.startsWith("Bearer ")) {
+                token = req.headers.authorization.split(" ")[1]
+            } else {
+                token = req.headers.authorization
+            }
+        }
         console.log("isAuth middleware - token:", token ? "exists" : "missing")
         
         if(!token){
@@ -19,9 +26,8 @@ const isAuth = async (req,res,next) => {
         next()
 
     } catch (error) {
-         console.log("isAuth error:", error.message)
-    return res.status(500).json({message:`isAuth error ${error.message}`})
-        
+        console.log("isAuth error:", error.message)
+        return res.status(401).json({message:`isAuth error ${error.message}`})
     }
 }
 

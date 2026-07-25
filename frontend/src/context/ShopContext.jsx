@@ -67,7 +67,11 @@ function ShopContext({children}) {
   
     setLoading(true);
     try {
-      let result = await axios.post(serverUrl + "/api/cart/add" , {itemId,size} , {withCredentials: true});
+      const token = localStorage.getItem("token")
+      let result = await axios.post(serverUrl + "/api/cart/add" , {itemId,size} , {
+        withCredentials: true,
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       console.log("Add to cart response:", result.data);
       toast.success("Product Added to Cart");
     } catch (error) {
@@ -83,7 +87,11 @@ function ShopContext({children}) {
 
     const getUserCart = async () => {
       try {
-        const result = await axios.post(serverUrl + '/api/cart/get',{},{ withCredentials: true })
+        const token = localStorage.getItem("token")
+        const result = await axios.post(serverUrl + '/api/cart/get',{},{
+          withCredentials: true,
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        })
         console.log("Fetched cart data:", result.data); // Debug log
       setCartItem(result.data)
     } catch (error) {
@@ -98,7 +106,11 @@ function ShopContext({children}) {
 
     if (userData) {
       try {
-        await axios.post(serverUrl + "/api/cart/update", { itemId, size, quantity }, { withCredentials: true })
+        const token = localStorage.getItem("token")
+        await axios.post(serverUrl + "/api/cart/update", { itemId, size, quantity }, {
+          withCredentials: true,
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        })
       } catch (error) {
         console.log(error)
         

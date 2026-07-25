@@ -47,6 +47,9 @@ function Registration() {
             name,email,password
          },{withCredentials:true})
             console.log("Registration response:", result.data)
+            if (result.data?.token) {
+                localStorage.setItem("token", result.data.token)
+            }
             getCurrentUser()
             toast.success("User Registration Successful")
             navigate("/")
@@ -68,6 +71,9 @@ function Registration() {
 
             const result = await axios.post(serverUrl + "/api/auth/googlelogin" ,{name , email} , {withCredentials:true})
             console.log(result.data)
+            if (result.data?.token) {
+                localStorage.setItem("token", result.data.token)
+            }
             getCurrentUser()
             navigate("/")
             toast.success("User Registration Successful")

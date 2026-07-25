@@ -12,7 +12,11 @@ function AdminContext({children}) {
     const getAdmin = async () => {
       try {
            console.log("Fetching admin data...")
-           let result = await axios.get(serverUrl + "/api/user/getadmin",{withCredentials:true})
+           const token = localStorage.getItem("adminToken") || localStorage.getItem("token")
+           let result = await axios.get(serverUrl + "/api/user/getadmin", {
+             withCredentials: true,
+             headers: token ? { Authorization: `Bearer ${token}` } : {}
+           })
 
       setAdminData(result.data)
       console.log("getAdmin result:", result.data)

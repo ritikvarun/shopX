@@ -51,7 +51,10 @@ function LoginModal({ onClose, defaultMode = "login" }) {
             setLoading(false); return
         }
         try {
-            await axios.post(serverUrl + '/api/auth/login', { email: loginEmail, password: loginPassword }, { withCredentials: true })
+            let result = await axios.post(serverUrl + '/api/auth/login', { email: loginEmail, password: loginPassword }, { withCredentials: true })
+            if (result.data?.token) {
+                localStorage.setItem("token", result.data.token)
+            }
             toast.success("Login successful! 🎉")
             getCurrentUser()
             onClose()
@@ -74,7 +77,10 @@ function LoginModal({ onClose, defaultMode = "login" }) {
             setLoading(false); return
         }
         try {
-            await axios.post(serverUrl + '/api/auth/registration', { name, email: signupEmail, password: signupPassword }, { withCredentials: true })
+            let result = await axios.post(serverUrl + '/api/auth/registration', { name, email: signupEmail, password: signupPassword }, { withCredentials: true })
+            if (result.data?.token) {
+                localStorage.setItem("token", result.data.token)
+            }
             toast.success("Account ban gaya! 🎉")
             getCurrentUser()
             onClose()
@@ -90,10 +96,13 @@ function LoginModal({ onClose, defaultMode = "login" }) {
         try {
             const response = await signInWithPopup(auth, provider)
             let user = response.user
-            await axios.post(serverUrl + "/api/auth/googlelogin",
+            let result = await axios.post(serverUrl + "/api/auth/googlelogin",
                 { name: user.displayName, email: user.email },
                 { withCredentials: true }
             )
+            if (result.data?.token) {
+                localStorage.setItem("token", result.data.token)
+            }
             toast.success("Google Login Successful 🎉")
             getCurrentUser()
             onClose()

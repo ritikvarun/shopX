@@ -40,6 +40,9 @@ function Login() {
                 email,password
             },{withCredentials:true})
             console.log("Login result:", result.data)
+            if (result.data?.token) {
+                localStorage.setItem("token", result.data.token)
+            }
             toast.success("User Login Successful")
             setLoading(false)
             getCurrentUser()
@@ -60,6 +63,9 @@ function Login() {
 
             const result = await axios.post(serverUrl + "/api/auth/googlelogin", {name, email}, {withCredentials:true})
             console.log(result.data)
+            if (result.data?.token) {
+                localStorage.setItem("token", result.data.token)
+            }
             toast.success("Google Login Successful")
             getCurrentUser()
             navigate("/")
