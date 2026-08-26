@@ -111,7 +111,7 @@ export const sendAdminOrderAlert = async (orderDetails) => {
                     <span style="color:#fff;font-weight:700;font-size:20px;">₹${amount}</span>
                 </div>
                 <div style="margin-top:20px;text-align:center;">
-                    <a href="${process.env.ADMIN_URL || 'http://localhost:5174'}/orders"
+                    <a href="${(process.env.ADMIN_URL || (process.env.NODE_ENV === 'production' ? 'https://shopx-admin.vercel.app' : 'http://localhost:5174')).replace(/\/$/, '')}/orders"
                        style="background:#000;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">
                         View in Admin Panel →
                     </a>
@@ -226,7 +226,7 @@ export const sendAdminReturnAlert = async (adminEmail, { userName, userEmail, it
                 </div>
                 `}
                 <div style="margin-top:20px;text-align:center;">
-                    <a href="${process.env.ADMIN_URL || 'http://localhost:5174'}/returns"
+                    <a href="${(process.env.ADMIN_URL || (process.env.NODE_ENV === 'production' ? 'https://shopx-admin.vercel.app' : 'http://localhost:5174')).replace(/\/$/, '')}/returns"
                        style="background:#000;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">
                         View Returns Panel →
                     </a>

@@ -11,24 +11,33 @@ import { adminDataContext } from './context/AdminContext'
   import { ToastContainer, toast } from 'react-toastify';
 
 function App() {
-  let {adminData} = useContext(adminDataContext)
+  let { adminData, loading } = useContext(adminDataContext)
   return (
-
     <>
       <ToastContainer />
-    {!adminData ? <Login/> : <>
-
-      <Routes>
-        <Route path='/' element={<Home/>}/>
-        <Route path='/add' element={<Add/>}/>
-        <Route path='/lists' element={<Lists/>}/>
-        <Route path='/orders' element={<Orders/>}/>
-        <Route path='/returns' element={<Returns/>}/>
-        <Route path='/banners' element={<Banners/>}/>
-        <Route path='/login' element={<Login/>}/>
-      </Routes>
-      </>
-      }
+      {loading ? (
+        <div className='w-[100vw] h-[100vh] flex flex-col items-center justify-center bg-gray-50 gap-[12px]'>
+          <div className='w-[36px] h-[36px] border-4 border-black border-t-transparent rounded-full animate-spin'></div>
+          <span className='text-[13px] font-semibold text-gray-500'>Loading Admin Panel...</span>
+        </div>
+      ) : !adminData ? (
+        <Login />
+      ) : (
+        <Routes>
+          <Route path='/' element={<Home />} />
+          <Route path='/add' element={<Add />} />
+          <Route path='/lists' element={<Lists />} />
+          <Route path='/list' element={<Lists />} />
+          <Route path='/orders' element={<Orders />} />
+          <Route path='/order' element={<Orders />} />
+          <Route path='/returns' element={<Returns />} />
+          <Route path='/return' element={<Returns />} />
+          <Route path='/banners' element={<Banners />} />
+          <Route path='/banner' element={<Banners />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='*' element={<Home />} />
+        </Routes>
+      )}
     </>
   )
 }
