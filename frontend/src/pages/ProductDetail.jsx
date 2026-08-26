@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { shopDataContext } from '../context/ShopContext'
+import { userDataContext } from '../context/UserContext'
 import { FaStar, FaStarHalfAlt } from "react-icons/fa"
-import { MdLocalShipping, MdAssignmentReturn } from "react-icons/md"
+import { MdLocalShipping, MdAssignmentReturn, MdOutlineShoppingCart } from "react-icons/md"
 import { RiShieldCheckLine } from "react-icons/ri"
 import RelatedProduct from '../component/RelatedProduct'
 import Loading from '../component/Loading'
@@ -14,8 +15,10 @@ import { toast } from 'react-toastify'
 
 function ProductDetail() {
     let { productId } = useParams()
+    let navigate = useNavigate()
     let { serverUrl } = useContext(authDataContext)
-    let { products, currency, addtoCart, loading } = useContext(shopDataContext)
+    let { userData } = useContext(userDataContext)
+    let { products, currency, addtoCart, loading, cartItem } = useContext(shopDataContext)
     let [productData, setProductData] = useState(false)
     const [reviews, setReviews] = useState([])
     const [averageRating, setAverageRating] = useState(0)
@@ -157,14 +160,34 @@ function ProductDetail() {
                             </div>
                         </div>
 
-                        {/* Add to cart */}
-                        <button
-                            onClick={() => addtoCart(productData._id, size)}
-                            disabled={!size || loading}
-                            className='w-full h-[52px] rounded-xl bg-black text-white font-semibold text-[15px] flex items-center justify-center hover:bg-gray-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed mt-[4px]'
-                        >
-                            {loading ? <Loading /> : size ? 'Add to Cart' : 'Select a Size'}
-                        </button>
+                        {/* Add to cart / Go to cart */}
+                        {size && cartItem?.[productData._id]?.[size] > 0 ? (
+                            <div className='flex items-center gap-[10px] mt-[4px]'>
+                                <button
+                                    onClick={() => navigate('/cart')}
+                                    className='flex-1 h-[52px] rounded-xl bg-black text-white font-bold text-[15px] flex items-center justify-center gap-[8px] hover:bg-gray-800 transition-all active:scale-[0.99] shadow-lg shadow-black/10'
+                                >
+                                    <MdOutlineShoppingCart className='text-[18px]' />
+                                    Go to Cart
+                                </button>
+                                <button
+                                    onClick={() => addtoCart(productData._id, size)}
+                                    disabled={loading}
+                                    className='h-[52px] px-[20px] rounded-xl border-2 border-gray-200 text-gray-800 font-semibold text-[14px] hover:border-black hover:bg-gray-50 transition-all active:scale-[0.99]'
+                                    title="Add one more of this size"
+                                >
+                                    + Add More
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => addtoCart(productData._id, size)}
+                                disabled={!size || loading}
+                                className='w-full h-[52px] rounded-xl bg-black text-white font-semibold text-[15px] flex items-center justify-center hover:bg-gray-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed mt-[4px]'
+                            >
+                                {loading ? <Loading /> : size ? 'Add to Cart' : 'Select a Size'}
+                            </button>
+                        )}
 
                         {/* Trust badges */}
                         <div className='grid grid-cols-3 gap-[12px] border-t border-gray-100 pt-[20px]'>
@@ -276,18 +299,41 @@ function ProductDetail() {
             <Footer />
 
             {/* ── Sticky Mobile Buy Bar ── */}
-            <div className='fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-3xl border-t border-gray-200 px-[20px] py-[16px] pb-[34px] flex items-center justify-between md:hidden z-[100] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]'>
+            <div className='fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-3xl border-t border-gray-200 px-[20px] py-[12px] pb-[calc(14px+env(safe-area-inset-bottom,16px))] flex items-center justify-between md:hidden z-[100] shadow-[0_-10px_40px_rgba(0,0,0,0.08)]'>
                 <div className='flex flex-col'>
                     <span className='text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-[2px] leading-none'>Total Price</span>
                     <span className='text-[22px] font-black text-gray-900 leading-none'>{currency} {productData.price}</span>
                 </div>
-                <button
-                    onClick={() => addtoCart(productData._id, size)}
-                    disabled={!size || loading}
-                    className='h-[50px] bg-black text-white px-[32px] rounded-full font-bold text-[14px] active:scale-95 transition-all duration-300 disabled:opacity-50 flex items-center justify-center shadow-[0_8px_20px_rgba(0,0,0,0.2)]'
-                >
-                    {loading ? <Loading /> : size ? 'Add to Cart' : 'Select Size'}
-                </button>
+
+                <div className='flex items-center gap-[8px]'>
+                    {size && cartItem?.[productData._id]?.[size] > 0 ? (
+                        <div className='flex items-center gap-[8px]'>
+                            <button
+                                onClick={() => addtoCart(productData._id, size)}
+                                disabled={loading}
+                                className='h-[48px] px-[14px] rounded-full border-2 border-gray-200 text-gray-800 font-bold text-[13px] active:scale-95 transition-all flex items-center justify-center bg-gray-50'
+                                title="Add one more"
+                            >
+                                +1 More
+                            </button>
+                            <button
+                                onClick={() => navigate('/cart')}
+                                className='h-[48px] bg-black text-white px-[22px] rounded-full font-bold text-[14px] active:scale-95 transition-all duration-300 flex items-center gap-[8px] shadow-[0_8px_20px_rgba(0,0,0,0.2)]'
+                            >
+                                <MdOutlineShoppingCart className='text-[18px]' />
+                                Go to Cart
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={() => addtoCart(productData._id, size)}
+                            disabled={!size || loading}
+                            className='h-[48px] bg-black text-white px-[30px] rounded-full font-bold text-[14px] active:scale-95 transition-all duration-300 disabled:opacity-50 flex items-center justify-center shadow-[0_8px_20px_rgba(0,0,0,0.2)]'
+                        >
+                            {loading ? <Loading /> : size ? 'Add to Cart' : 'Select Size'}
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     )

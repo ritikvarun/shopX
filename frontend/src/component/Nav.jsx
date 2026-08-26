@@ -67,12 +67,31 @@ function Nav({ onLoginClick }) {
                 </ul>
 
                 {/* Right icons */}
-                <div className='flex items-center gap-[14px]'>
+                <div className='flex items-center gap-[10px] md:gap-[14px]'>
                     {/* Search icon */}
                     {!showSearch
-                        ? <IoSearchCircleOutline className='w-[34px] h-[34px] text-gray-700 cursor-pointer hover:text-black transition-all' onClick={() => { setShowSearch(true); navigate("/collection") }} />
-                        : <IoSearchCircleSharp className='w-[34px] h-[34px] text-black cursor-pointer' onClick={() => setShowSearch(false)} />
+                        ? <IoSearchCircleOutline className='w-[30px] h-[30px] md:w-[34px] md:h-[34px] text-gray-700 cursor-pointer hover:text-black transition-all' onClick={() => { setShowSearch(true); navigate("/collection") }} />
+                        : <IoSearchCircleSharp className='w-[30px] h-[30px] md:w-[34px] md:h-[34px] text-black cursor-pointer' onClick={() => setShowSearch(false)} />
                     }
+
+                    {/* Cart - visible on both mobile and desktop */}
+                    <div
+                        className='relative cursor-pointer p-1 rounded-full hover:bg-gray-100 transition-all flex items-center justify-center'
+                        onClick={() => {
+                            if (!userData) {
+                                onLoginClick?.()
+                            } else {
+                                navigate("/cart")
+                            }
+                        }}
+                    >
+                        <MdOutlineShoppingCart className='w-[24px] h-[24px] md:w-[28px] md:h-[28px] text-gray-700 hover:text-black transition-all' />
+                        {cartCount > 0 && (
+                            <span className='absolute -top-[2px] -right-[2px] md:-top-[4px] md:-right-[4px] min-w-[17px] h-[17px] md:min-w-[18px] md:h-[18px] px-[3px] bg-black text-white rounded-full text-[9px] md:text-[10px] font-bold flex items-center justify-center border-2 border-white'>
+                                {cartCount}
+                            </span>
+                        )}
+                    </div>
 
                     {/* Desktop: Login button or Avatar */}
                     {!userData ? (
@@ -84,22 +103,12 @@ function Nav({ onLoginClick }) {
                         </button>
                     ) : (
                         <div
-                            className='w-[34px] h-[34px] bg-black text-white rounded-full flex items-center justify-center cursor-pointer text-[14px] font-bold flex-shrink-0'
+                            className='w-[30px] h-[30px] md:w-[34px] md:h-[34px] bg-black text-white rounded-full flex items-center justify-center cursor-pointer text-[13px] md:text-[14px] font-bold flex-shrink-0'
                             onClick={() => setShowProfile(p => !p)}
                         >
                             {userData?.name?.slice(0, 1)?.toUpperCase()}
                         </div>
                     )}
-
-                    {/* Cart - desktop only */}
-                    <div className='relative hidden md:block cursor-pointer' onClick={() => navigate("/cart")}>
-                        <MdOutlineShoppingCart className='w-[28px] h-[28px] text-gray-700 hover:text-black transition-all' />
-                        {cartCount > 0 && (
-                            <span className='absolute -top-[6px] -right-[6px] w-[16px] h-[16px] bg-black text-white rounded-full text-[9px] font-bold flex items-center justify-center'>
-                                {cartCount}
-                            </span>
-                        )}
-                    </div>
                 </div>
             </div>
 
@@ -142,7 +151,7 @@ function Nav({ onLoginClick }) {
             )}
 
             {/* ── Mobile bottom navigation (Ultra-Modern Glass Pill) ── */}
-            <div className={`fixed bottom-[24px] left-[20px] right-[20px] h-[68px] flex items-center justify-around bg-white/80 backdrop-blur-2xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full md:hidden z-[60] transition-transform duration-500 ease-in-out ${location.pathname.startsWith('/product/') ? 'translate-y-[150%]' : 'translate-y-0'}`}>
+            <div className={`fixed bottom-[24px] left-[20px] right-[20px] h-[68px] flex items-center justify-around bg-white/80 backdrop-blur-2xl border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-full md:hidden z-[60] transition-transform duration-500 ease-in-out ${location.pathname.startsWith('/productdetail/') || location.pathname.startsWith('/product/') ? 'translate-y-[150%]' : 'translate-y-0'}`}>
                 {[
                     { icon: <IoMdHome className='w-[24px] h-[24px]' />, label: 'Home', path: '/' },
                     { icon: <HiOutlineCollection className='w-[24px] h-[24px]' />, label: 'Shop', path: '/collection' },
