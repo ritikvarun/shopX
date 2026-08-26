@@ -28,20 +28,34 @@ function AdminContext({children}) {
       }
     }
 
+    const logout = async () => {
+      try {
+        localStorage.removeItem("adminToken")
+        localStorage.removeItem("token")
+        setAdminData(null)
+        await axios.get(serverUrl + "/api/auth/logout", { withCredentials: true })
+      } catch (error) {
+        console.log("admin logout error:", error)
+      } finally {
+        localStorage.removeItem("adminToken")
+        localStorage.removeItem("token")
+        setAdminData(null)
+      }
+    }
+
     useEffect(()=>{
      getAdmin()
     },[])
 
 
     let value = {
-adminData,setAdminData,getAdmin,loading
+      adminData,setAdminData,getAdmin,logout,loading
     }
   return (
     <div>
-<adminDataContext.Provider value={value}>
-    {children}
-</adminDataContext.Provider>
-      
+      <adminDataContext.Provider value={value}>
+        {children}
+      </adminDataContext.Provider>
     </div>
   )
 }

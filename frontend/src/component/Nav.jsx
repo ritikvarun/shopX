@@ -12,7 +12,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import axios from 'axios'
 
 function Nav({ onLoginClick }) {
-    const { getCurrentUser, userData } = useContext(userDataContext)
+    const { userData, logout } = useContext(userDataContext)
     const { serverUrl } = useContext(authDataContext)
     const { showSearch, setShowSearch, search, setSearch, getCartCount } = useContext(shopDataContext)
     const [showProfile, setShowProfile] = useState(false)
@@ -21,8 +21,8 @@ function Nav({ onLoginClick }) {
 
     const handleLogout = async () => {
         try {
-            await axios.get(serverUrl + "/api/auth/logout", { withCredentials: true })
-            getCurrentUser()
+            await logout()
+            navigate("/")
         } catch (error) {
             console.log(error)
         }

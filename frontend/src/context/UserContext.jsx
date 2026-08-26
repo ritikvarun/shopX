@@ -43,17 +43,29 @@ function UserContext({children}) {
         }
     }
 
+    const logout = async () => {
+        try {
+            localStorage.removeItem("userData")
+            localStorage.removeItem("token")
+            setUserData(null)
+            await axios.get(serverUrl + "/api/auth/logout", { withCredentials: true })
+        } catch (error) {
+            console.log("logout error:", error)
+        } finally {
+            localStorage.removeItem("userData")
+            localStorage.removeItem("token")
+            setUserData(null)
+        }
+    }
+
     useEffect(()=>{
      getCurrentUser()
     },[])
 
-
-
     let value = {
-     userData,setUserData,getCurrentUser,loading
+     userData,setUserData,getCurrentUser,logout,loading
     }
     
-   
   return (
     <div>
       <userDataContext.Provider value={value}>

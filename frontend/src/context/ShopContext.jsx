@@ -160,9 +160,13 @@ function ShopContext({children}) {
     },[])
 
     useEffect(() => {
-    getUserCart()
-    fetchSettings()
-  },[])
+        if (userData) {
+            getUserCart()
+        } else {
+            setCartItem({})
+        }
+        fetchSettings()
+    }, [userData])
 
 
 
