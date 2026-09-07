@@ -11,19 +11,27 @@ function AdminContext({children}) {
 
     const getAdmin = async () => {
       try {
-           console.log("Fetching admin data...")
            const token = localStorage.getItem("adminToken") || localStorage.getItem("token")
+           if (!token) {
+             setAdminData(null)
+             setLoading(false)
+             return
+           }
            let result = await axios.get(serverUrl + "/api/user/getadmin", {
              withCredentials: true,
-             headers: token ? { Authorization: `Bearer ${token}` } : {}
+             headers: { Authorization: `Bearer ${token}` }
            })
 
       setAdminData(result.data)
-      console.log("getAdmin result:", result.data)
       setLoading(false)
       } catch (error) {
-        console.log("getAdmin error:", error.response?.data || error.message)
-        // Keep existing adminData instead of setting to null on error
+        if (error.response?.status === 401) {
+          setAdminData(null)
+          localStorage.removeItem("adminToken")
+          localStorage.removeItem("token")
+        } else {
+          console.log("getAdmin error:", error.response?.data || error.message)
+        }
         setLoading(false)
       }
     }

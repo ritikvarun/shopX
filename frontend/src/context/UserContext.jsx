@@ -19,25 +19,30 @@ function UserContext({children}) {
 
    const getCurrentUser = async () => {
         try {
-            console.log("Fetching current user from:", serverUrl + "/api/user/getcurrentuser")
             const token = localStorage.getItem("token")
+            if (!token) {
+                setUserData(null)
+                setLoading(false)
+                return
+            }
+
             let result = await axios.get(serverUrl + "/api/user/getcurrentuser", {
                 withCredentials: true,
-                headers: token ? { Authorization: `Bearer ${token}` } : {}
+                headers: { Authorization: `Bearer ${token}` }
             })
 
             setUserData(result.data)
             localStorage.setItem("userData", JSON.stringify(result.data))
-            console.log("Current user fetched:", result.data)
             setLoading(false)
 
         } catch (error) {
-            console.log("getCurrentUser error:", error.response?.data || error.message)
             // Only clear if 401 (unauthorized), otherwise keep existing data
             if(error.response?.status === 401){
                 setUserData(null)
                 localStorage.removeItem("userData")
                 localStorage.removeItem("token")
+            } else {
+                console.log("getCurrentUser error:", error.response?.data || error.message)
             }
             setLoading(false)
         }

@@ -21,7 +21,6 @@ function ShopContext({children}) {
     const getProducts = async () => {
         try {
             let result = await axios.get(serverUrl + "/api/product/list")
-            console.log(result.data)
             setProducts(result.data)
         } catch (error) {
             console.log(error)
@@ -92,7 +91,6 @@ function ShopContext({children}) {
           withCredentials: true,
           headers: token ? { Authorization: `Bearer ${token}` } : {}
         })
-        console.log("Fetched cart data:", result.data); // Debug log
       setCartItem(result.data)
     } catch (error) {
       console.log(error)
@@ -120,12 +118,10 @@ function ShopContext({children}) {
     }
      const getCartCount = () => {
     let totalCount = 0;
-    console.log("Cart Data:", cartItem); // Debug log
     for (const items in cartItem) {
       for (const item in cartItem[items]) {
         try {
           if (cartItem[items][item] > 0) {
-            console.log(`Product: ${items}, Size: ${item}, Quantity: ${cartItem[items][item]}`); // Debug log
             totalCount += 1; // Count each unique product-size combination as 1
           }
         } catch (error) {
@@ -133,7 +129,6 @@ function ShopContext({children}) {
         }
       }
     }
-    console.log("Total Count:", totalCount); // Debug log
     return totalCount
   }
 
