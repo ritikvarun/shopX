@@ -141,14 +141,6 @@ function Nav({ onLoginClick }) {
                                 <li className='px-[16px] py-[11px] hover:bg-gray-50 cursor-pointer rounded-lg mx-[4px]' onClick={() => { navigate("/about"); setShowProfile(false) }}>
                                     About
                                 </li>
-                                <li className='px-[16px] py-[11px] hover:bg-gray-50 cursor-pointer rounded-lg mx-[4px] font-medium text-gray-800 flex items-center justify-between' onClick={() => {
-                                    const adminUrl = import.meta.env.VITE_ADMIN_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5174' : 'https://shopx-admin.vercel.app')
-                                    window.open(adminUrl, '_blank')
-                                    setShowProfile(false)
-                                }}>
-                                    <span>⚙️ Admin Panel</span>
-                                    <span className='text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full'>Portal</span>
-                                </li>
                                 <li className='px-[16px] py-[11px] hover:bg-red-50 text-red-500 cursor-pointer rounded-lg mx-[4px] mt-[4px] border-t border-gray-100' onClick={() => { handleLogout(); setShowProfile(false) }}>
                                     Log Out
                                 </li>
