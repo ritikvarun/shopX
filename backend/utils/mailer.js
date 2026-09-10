@@ -2,12 +2,16 @@ import { Resend } from 'resend'
 import dotenv from 'dotenv'
 dotenv.config()
 
-// ── Resend Initialization ─────────────────────────────────────
-const resend = new Resend(process.env.RESEND_API_KEY || 're_temp_placeholder_key')
-
 // ── Helper: send email safely (never crashes server) ─────────
 const sendMail = async (options) => {
     try {
+        const apiKey = process.env.RESEND_API_KEY
+        if (!apiKey) {
+            console.warn('⚠️ [ShopX Mailer] RESEND_API_KEY is not set in environment variables!')
+            return null
+        }
+
+        const resend = new Resend(apiKey)
         const response = await resend.emails.send({
             from: 'ShopX <onboarding@resend.dev>',
             to: options.to,
@@ -20,69 +24,27 @@ const sendMail = async (options) => {
         } else {
             console.log(`✅ Email sent to: ${options.to} (ID: ${response.data?.id})`)
         }
+        return response
     } catch (err) {
         console.error(`❌ Email failed to ${options.to}:`, err.message)
+        return null
     }
 }
 
-// ── 1. User: Order Confirmation ──────────────────────────────
+// ── 1. User: Order Confirmation (Disabled: only admin gets alerts) ──
 export const sendOrderConfirmation = async (userEmail, userName, items, totalAmount, orderId) => {
-    const itemRows = items.map(item => `
-        <tr>
-            <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;">${item.name}</td>
-            <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:center;">${item.size}</td>
-            <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:center;">${item.quantity}</td>
-            <td style="padding:8px 12px;border-bottom:1px solid #f0f0f0;text-align:right;">₹${item.price}</td>
-        </tr>
-    `).join('')
-
-    await sendMail({
-        from: `"ShopX" <${process.env.EMAIL_USER}>`,
-        to: userEmail,
-        subject: '✅ Order Confirmed — ShopX',
-        html: `
-        <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
-            <div style="background:#000;padding:24px 32px;">
-                <h1 style="color:#fff;margin:0;font-size:22px;letter-spacing:-0.5px;">ShopX</h1>
-            </div>
-            <div style="padding:32px;">
-                <h2 style="margin:0 0 8px;color:#111;font-size:20px;">Order Confirmed! 🎉</h2>
-                <p style="color:#6b7280;margin:0 0 24px;">Hi <b>${userName}</b>, thank you for your order.</p>
-                <table style="width:100%;border-collapse:collapse;background:#f9fafb;border-radius:8px;overflow:hidden;">
-                    <thead>
-                        <tr style="background:#f3f4f6;">
-                            <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6b7280;text-transform:uppercase;">Product</th>
-                            <th style="padding:10px 12px;text-align:center;font-size:12px;color:#6b7280;text-transform:uppercase;">Size</th>
-                            <th style="padding:10px 12px;text-align:center;font-size:12px;color:#6b7280;text-transform:uppercase;">Qty</th>
-                            <th style="padding:10px 12px;text-align:right;font-size:12px;color:#6b7280;text-transform:uppercase;">Price</th>
-                        </tr>
-                    </thead>
-                    <tbody>${itemRows}</tbody>
-                </table>
-                <div style="margin-top:20px;padding:16px;background:#f9fafb;border-radius:8px;display:flex;justify-content:space-between;">
-                    <span style="font-weight:600;color:#111;">Total Amount</span>
-                    <span style="font-weight:700;color:#111;font-size:18px;">₹${totalAmount}</span>
-                </div>
-                <p style="color:#6b7280;margin-top:24px;font-size:14px;">
-                    We'll notify you when your order ships.<br/>
-                    Order ID: <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;font-size:12px;">${orderId}</code>
-                </p>
-            </div>
-            <div style="background:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;text-align:center;">
-                <p style="color:#9ca3af;font-size:12px;margin:0;">© 2026 ShopX. All rights reserved.</p>
-            </div>
-        </div>`
-    })
+    // Disabled: User requested notifications only to admin
+    return null
 }
 
 // ── 2. Admin: New Order Alert ─────────────────────────────────
 export const sendAdminOrderAlert = async (orderDetails) => {
+    const adminEmail = process.env.ADMIN_EMAIL || 'ritikvarun64@gmail.com'
     const { userName, userEmail, items, amount, address, paymentMethod, orderId } = orderDetails
     const itemList = items.map(i => `<li>${i.name} (${i.size}) × ${i.quantity} — ₹${i.price}</li>`).join('')
 
     await sendMail({
-        from: `"ShopX Alerts" <${process.env.EMAIL_USER}>`,
-        to: process.env.ADMIN_EMAIL,
+        to: adminEmail,
         subject: `🛒 New Order Received — ₹${amount} — ShopX`,
         html: `
         <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
@@ -122,76 +84,63 @@ export const sendAdminOrderAlert = async (orderDetails) => {
     })
 }
 
-// ── 3. User: Order Status Update ─────────────────────────────
-export const sendStatusUpdate = async (userEmail, userName, orderStatus, orderId) => {
-    const statusEmoji = {
-        'Order Placed': '📋',
-        'Packing': '📦',
-        'Shipped': '🚚',
-        'Out for delivery': '🛵',
-        'Delivered': '✅'
-    }
-    const emoji = statusEmoji[orderStatus] || '📦'
+// ── 3. Admin: New User Registration Alert ─────────────────────
+export const sendAdminNewUserAlert = async (userName, userEmail, method = 'Standard') => {
+    const adminEmail = process.env.ADMIN_EMAIL || 'ritikvarun64@gmail.com'
+    const formattedTime = new Date().toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        dateStyle: "medium",
+        timeStyle: "short",
+    });
 
     await sendMail({
-        from: `"ShopX" <${process.env.EMAIL_USER}>`,
-        to: userEmail,
-        subject: `${emoji} Order Update: ${orderStatus} — ShopX`,
+        to: adminEmail,
+        subject: `🎉 New User Joined ShopX — ${userName}`,
         html: `
         <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
             <div style="background:#000;padding:24px 32px;">
-                <h1 style="color:#fff;margin:0;font-size:22px;">ShopX</h1>
-            </div>
-            <div style="padding:32px;text-align:center;">
-                <div style="font-size:48px;margin-bottom:16px;">${emoji}</div>
-                <h2 style="color:#111;margin:0 0 8px;">Your order is now:<br/><span style="color:#000;">${orderStatus}</span></h2>
-                <p style="color:#6b7280;margin:0 0 24px;">Hi ${userName}, we've updated your order status.</p>
-                <p style="color:#9ca3af;font-size:13px;">Order ID: <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${orderId}</code></p>
-            </div>
-            <div style="background:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;text-align:center;">
-                <p style="color:#9ca3af;font-size:12px;margin:0;">© 2026 ShopX. All rights reserved.</p>
-            </div>
-        </div>`
-    })
-}
-
-// ── 4. User: Return/Replacement Request Confirmation ─────────────────
-export const sendReturnRequestEmail = async (userEmail, userName, { itemName, reason, actionType, returnId }) => {
-    await sendMail({
-        from: `"ShopX Support" <${process.env.EMAIL_USER}>`,
-        to: userEmail,
-        subject: `Your ${actionType} Request is Received — ShopX`,
-        html: `
-        <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
-            <div style="background:#000;padding:24px 32px;">
-                <h1 style="color:#fff;margin:0;font-size:22px;">ShopX</h1>
+                <h1 style="color:#fff;margin:0;font-size:22px;">ShopX Admin</h1>
+                <span style="background:#10b981;color:#fff;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;display:inline-block;margin-top:8px;">New User Registration</span>
             </div>
             <div style="padding:32px;">
-                <div style="font-size:40px;margin-bottom:12px;">🔄</div>
-                <h2 style="margin:0 0 8px;color:#111;">${actionType} Request Received</h2>
-                <p style="margin:0 0 20px;color:#6b7280;">Hi <b>${userName}</b>, we’ve got your request to ${actionType.toLowerCase()} this item.</p>
-                <div style="background:#f9fafb;border-radius:8px;padding:16px;margin-bottom:16px;">
-                    <p style="margin:0 0 8px;font-size:12px;color:#6b7280;text-transform:uppercase;font-weight:600;">Return Details</p>
-                    <p style="margin:0 0 4px;color:#111;"><b>Item:</b> ${itemName}</p>
-                    <p style="margin:0;color:#111;"><b>Reason:</b> ${reason}</p>
+                <h2 style="margin:0 0 20px;color:#111;">New User Joined ShopX 🚀</h2>
+                <div style="background:#f9fafb;padding:16px;border-radius:8px;margin-bottom:16px;border:1px solid #e5e7eb;">
+                    <p style="margin:0 0 6px;font-size:12px;color:#6b7280;text-transform:uppercase;font-weight:600;">Customer Info</p>
+                    <p style="margin:4px 0;color:#111;font-weight:600;font-size:16px;">👤 ${userName}</p>
+                    <p style="margin:4px 0;color:#6b7280;font-size:14px;">📧 <a href="mailto:${userEmail}" style="color:#2563eb;text-decoration:none;">${userEmail}</a></p>
+                    <p style="margin:4px 0;color:#6b7280;font-size:13px;">🔑 Signup Method: <b>${method}</b></p>
+                    <p style="margin:4px 0;color:#6b7280;font-size:13px;">⏰ Time (IST): <b>${formattedTime}</b></p>
                 </div>
-                <div style="background:#fef3c7;border-radius:8px;padding:12px 16px;">
-                    <p style="margin:0;color:#92400e;font-size:13px;">⏱ Please keep the item ready for pickup. Our team will contact you soon.</p>
+                <div style="margin-top:20px;text-align:center;">
+                    <a href="${(process.env.ADMIN_URL || (process.env.NODE_ENV === 'production' ? 'https://shopx-admin.vercel.app' : 'http://localhost:5174')).replace(/\/$/, '')}/users"
+                       style="background:#000;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">
+                        View Users in Admin Panel →
+                    </a>
                 </div>
-                <p style="color:#9ca3af;font-size:12px;margin-top:16px;">Return ID: <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${returnId}</code></p>
             </div>
             <div style="background:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;text-align:center;">
-                <p style="color:#9ca3af;font-size:12px;margin:0;">© 2026 ShopX. All rights reserved.</p>
+                <p style="color:#9ca3af;font-size:12px;margin:0;">© 2026 ShopX Admin Notification System</p>
             </div>
         </div>`
     })
 }
 
-// ── 5. Admin: Return Alert ────────────────────────────────────
+// ── 4. User: Order Status Update (Disabled: only admin gets alerts) ──
+export const sendStatusUpdate = async (userEmail, userName, orderStatus, orderId) => {
+    return null
+}
+
+// ── 5. User: Return/Replacement Request Confirmation (Disabled) ──
+export const sendReturnRequestEmail = async (userEmail, userName, details) => {
+    return null
+}
+
+// ── 6. Admin: Return Alert ────────────────────────────────────
 export const sendAdminReturnAlert = async (adminEmail, { userName, userEmail, itemName, reason, description, actionType, refundMethod, refundDetails, returnId }) => {
+    const targetEmail = adminEmail || process.env.ADMIN_EMAIL || 'ritikvarun64@gmail.com'
+
     await sendMail({
-        from: `"ShopX Alerts" <${process.env.EMAIL_USER}>`,
-        to: adminEmail,
+        to: targetEmail,
         subject: `↩️ New ${actionType} Request — ${itemName} — ShopX`,
         html: `
         <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
@@ -237,37 +186,7 @@ export const sendAdminReturnAlert = async (adminEmail, { userName, userEmail, it
     })
 }
 
-// ── 6. User: Return Status Update ────────────────────────────
-export const sendReturnStatusEmail = async (userEmail, userName, { status, adminNote, itemName, returnId }) => {
-    const isApproved = status === 'Approved'
-    const emoji = isApproved ? '✅' : '❌'
-    const color = isApproved ? '#22c55e' : '#ef4444'
-    const message = isApproved
-        ? 'Your return has been approved! Our team will arrange pickup soon. Refund in 5-7 business days.'
-        : 'Unfortunately, your return request has been rejected.'
-
-    await sendMail({
-        from: `"ShopX" <${process.env.EMAIL_USER}>`,
-        to: userEmail,
-        subject: `${emoji} Return ${status} — ${itemName} — ShopX`,
-        html: `
-        <div style="font-family:'Segoe UI',sans-serif;max-width:600px;margin:auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">
-            <div style="background:#000;padding:24px 32px;">
-                <h1 style="color:#fff;margin:0;font-size:22px;">ShopX</h1>
-            </div>
-            <div style="padding:32px;text-align:center;">
-                <div style="font-size:48px;margin-bottom:12px;">${emoji}</div>
-                <h2 style="color:#111;margin:0 0 8px;">Return <span style="color:${color};">${status}</span></h2>
-                <p style="color:#6b7280;margin:0 0 20px;">Hi <b>${userName}</b>, ${message}</p>
-                <div style="background:#f9fafb;border-radius:8px;padding:16px;text-align:left;margin-bottom:16px;">
-                    <p style="margin:0;color:#111;"><b>Item:</b> ${itemName}</p>
-                    ${adminNote ? `<p style="margin:8px 0 0;color:#374151;"><b>Note from team:</b> ${adminNote}</p>` : ''}
-                </div>
-                <p style="color:#9ca3af;font-size:12px;">Return ID: <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">${returnId}</code></p>
-            </div>
-            <div style="background:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb;text-align:center;">
-                <p style="color:#9ca3af;font-size:12px;margin:0;">© 2026 ShopX. All rights reserved.</p>
-            </div>
-        </div>`
-    })
+// ── 7. User: Return Status Update (Disabled) ─────────────────
+export const sendReturnStatusEmail = async (userEmail, userName, details) => {
+    return null
 }

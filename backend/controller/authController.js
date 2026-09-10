@@ -2,6 +2,7 @@ import User from "../model/userModel.js";
 import validator from "validator"
 import bcrypt from "bcryptjs"
 import { genToken, genToken1 } from "../config/token.js";
+import { sendAdminNewUserAlert } from "../utils/mailer.js";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -35,13 +36,16 @@ export const registration = async (req,res) => {
     const user = await User.create({name,email,password:hashPassword})
     let token = await genToken(user._id)
     res.cookie("token", token, cookieOptions)
+
+    // Admin ko new user registration alert bhejna
+    sendAdminNewUserAlert(user.name, user.email, 'Standard')
+
     const userObj = user.toObject ? user.toObject() : user
     return res.status(201).json({ ...userObj, token })
   } catch (error) {
     console.log("registration error")
     return res.status(500).json({message:`registration error ${error}`})
   }
-    
 }
 
 
@@ -87,11 +91,13 @@ try {
 export const googleLogin = async (req,res) => {
     try {
         let {name , email} = req.body;
-         let user = await User.findOne({email}) 
+        let user = await User.findOne({email}) 
         if(!user){
           user = await User.create({
             name,email
-        })
+          })
+          // Admin ko new Google signup alert bhejna
+          sendAdminNewUserAlert(user.name, user.email, 'Google')
         }
        
         let token = await genToken(user._id)
@@ -103,7 +109,6 @@ export const googleLogin = async (req,res) => {
          console.log("googleLogin error")
     return res.status(500).json({message:`googleLogin error ${error}`})
     }
-    
 }
 
 
