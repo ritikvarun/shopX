@@ -38,7 +38,13 @@ function PlaceOrder() {
             order_id: order.id,
             receipt: order.receipt,
             handler: async (response) => {
-                const { data } = await axios.post(serverUrl + '/api/order/verifyrazorpay', response, { withCredentials: true })
+                const token = localStorage.getItem("token")
+                const authHeaders = token ? { Authorization: `Bearer ${token}` } : {}
+                const { data } = await axios.post(
+                    serverUrl + '/api/order/verifyrazorpay', 
+                    response, 
+                    { withCredentials: true, headers: authHeaders }
+                )
                 if (data.success || data.message) {
                     navigate("/order"); setCartItem({})
                     toast.success("Payment Successful")
@@ -55,6 +61,13 @@ function PlaceOrder() {
         setLoading(true)
         e.preventDefault()
         try {
+            const token = localStorage.getItem("token")
+            if (!token || token === "undefined" || token === "null") {
+                toast.error("Please login to place an order")
+                setLoading(false)
+                return
+            }
+
             let orderItems = []
             for (const items in cartItem) {
                 for (const item in cartItem[items]) {
@@ -68,14 +81,28 @@ function PlaceOrder() {
                     }
                 }
             }
+
+            if (orderItems.length === 0) {
+                toast.error("Your cart is empty")
+                setLoading(false)
+                return
+            }
+
             const orderData = {
                 address: formData,
                 items: orderItems,
                 amount: getCartAmount() + delivery_fee
             }
+
+            const authHeaders = { Authorization: `Bearer ${token}` }
+
             switch (method) {
                 case 'cod': {
-                    const result = await axios.post(serverUrl + "/api/order/placeorder", orderData, { withCredentials: true })
+                    const result = await axios.post(
+                        serverUrl + "/api/order/placeorder", 
+                        orderData, 
+                        { withCredentials: true, headers: authHeaders }
+                    )
                     if (result.data.success || result.data.message) {
                         setCartItem({}); toast.success("Order Placed!")
                         navigate("/order")
@@ -86,7 +113,11 @@ function PlaceOrder() {
                 }
                 case 'razorpay': {
                     try {
-                        const resultRazorpay = await axios.post(serverUrl + "/api/order/razorpay", orderData, { withCredentials: true })
+                        const resultRazorpay = await axios.post(
+                            serverUrl + "/api/order/razorpay", 
+                            orderData, 
+                            { withCredentials: true, headers: authHeaders }
+                        )
                         if (resultRazorpay.data) initPay(resultRazorpay.data)
                         else toast.error("Razorpay initialization failed")
                     } catch (err) {

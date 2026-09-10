@@ -43,7 +43,13 @@ function Order() {
     const [bankName, setBankName] = useState('')
     const loadOrderData = async () => {
         try {
-            const result = await axios.post(serverUrl + '/api/order/userorder', {}, { withCredentials: true })
+            const token = localStorage.getItem("token")
+            const authHeaders = token ? { Authorization: `Bearer ${token}` } : {}
+            const result = await axios.post(
+                serverUrl + '/api/order/userorder', 
+                {}, 
+                { withCredentials: true, headers: authHeaders }
+            )
             if (result.data && result.data.length > 0) {
                 let allItems = []
                 result.data.map(order => {
@@ -67,7 +73,12 @@ function Order() {
 
     const loadUserReturns = async () => {
         try {
-            const { data } = await axios.get(serverUrl + '/api/return/my', { withCredentials: true })
+            const token = localStorage.getItem("token")
+            const authHeaders = token ? { Authorization: `Bearer ${token}` } : {}
+            const { data } = await axios.get(
+                serverUrl + '/api/return/my', 
+                { withCredentials: true, headers: authHeaders }
+            )
             setUserReturns(data)
         } catch (err) {
             console.log(err)
@@ -87,6 +98,8 @@ function Order() {
             ? { upiId } 
             : { accountNo: bankAccount, ifsc: bankIfsc, accountName: bankName }
         try {
+            const token = localStorage.getItem("token")
+            const authHeaders = token ? { Authorization: `Bearer ${token}` } : {}
             await axios.post(serverUrl + '/api/return/request', {
                 orderId: returnModal.orderId,
                 itemId: returnModal.item._id,
@@ -99,7 +112,7 @@ function Order() {
                 actionType,
                 refundMethod: actionType === 'Refund' ? refundMethod : undefined,
                 refundDetails: actionType === 'Refund' ? refundDetails : undefined
-            }, { withCredentials: true })
+            }, { withCredentials: true, headers: authHeaders })
             toast.success('Return request submitted! Check your email.')
             setReturnModal(null)
             setReturnReason('')

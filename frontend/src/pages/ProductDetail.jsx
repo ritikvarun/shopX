@@ -60,12 +60,20 @@ function ProductDetail() {
 
     const submitReview = async (e) => {
         e.preventDefault()
+        const token = localStorage.getItem("token")
+        if (!token) {
+            toast.error("Please login to submit a review")
+            return
+        }
         try {
             await axios.post(serverUrl + "/api/review/add", {
                 productId,
                 rating: myRating,
                 comment: myComment
-            }, { withCredentials: true })
+            }, { 
+                withCredentials: true,
+                headers: { Authorization: `Bearer ${token}` }
+            })
             toast.success("Review submitted properly!")
             setMyComment('')
             fetchReviews()

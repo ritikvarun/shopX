@@ -3,10 +3,12 @@ import validator from "validator"
 import bcrypt from "bcryptjs"
 import { genToken, genToken1 } from "../config/token.js";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 const cookieOptions = {
     httpOnly: true,
-    secure: true,
-    sameSite: "None",
+    secure: isProduction,
+    sameSite: isProduction ? "None" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000
 }
 
@@ -70,8 +72,8 @@ export const logOut = async (req,res) => {
 try {
     res.clearCookie("token", {
         httpOnly: true,
-        secure: true,
-        sameSite: "None"
+        secure: isProduction,
+        sameSite: isProduction ? "None" : "lax"
     })
     return res.status(200).json({message:"logOut successful"})
 } catch (error) {
