@@ -63,6 +63,28 @@ app.get("/", (req, res) => {
   res.status(200).send("Server is running");
 });
 
+app.get("/api/test-order-alert", async (req, res) => {
+  try {
+    const { sendAdminOrderAlert } = await import("./utils/mailer.js");
+    const result = await sendAdminOrderAlert({
+      userName: "Ritik Varun",
+      userEmail: "ritikvarun64@gmail.com",
+      items: [{ name: "Test Shirt", size: "L", quantity: 1, price: 499 }],
+      amount: 499,
+      address: { street: "ShopX Street", city: "Delhi", pinCode: "110001", phone: "9876543210" },
+      paymentMethod: "COD",
+      orderId: "TEST-" + Date.now()
+    });
+    return res.status(200).json({
+      status: "success",
+      message: "Order alert email triggered to ritikvarun64@gmail.com!",
+      result
+    });
+  } catch (err) {
+    return res.status(500).json({ status: "error", error: err.message });
+  }
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/product", productRoutes);

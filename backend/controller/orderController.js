@@ -31,27 +31,23 @@ export const placeOrder = async (req, res) => {
         await newOrder.save()
         await User.findByIdAndUpdate(userId, { cartData: {} })
 
-        // ── Send emails ──────────────────────
-        const user = await User.findById(userId)
-        if (user) {
-            // 1. User ko order confirmation
-            sendOrderConfirmation(
-                user.email,
-                user.name,
-                items,
-                amount,
-                newOrder._id.toString()
-            )
-            // 2. Admin ko new order alert
+        // ── Send admin order alert ──────────────────────
+        try {
+            const user = await User.findById(userId)
+            const customerName = user?.name || `${address?.firstName || ''} ${address?.lastName || ''}`.trim() || 'Customer'
+            const customerEmail = user?.email || address?.email || 'Customer'
+
             sendAdminOrderAlert({
-                userName: user.name,
-                userEmail: user.email,
+                userName: customerName,
+                userEmail: customerEmail,
                 items,
                 amount,
                 address,
                 paymentMethod: 'COD',
                 orderId: newOrder._id.toString()
             })
+        } catch (mailErr) {
+            console.error("Failed to trigger order alert email:", mailErr)
         }
 
         return res.status(201).json({ message: 'Order Place' })
@@ -118,25 +114,23 @@ export const verifyRazorpay = async (req, res) => {
             )
             await User.findByIdAndUpdate(userId, { cartData: {} })
 
-            // ── Send emails after successful Razorpay payment ──
-            const user = await User.findById(userId)
-            if (user && updatedOrder) {
-                sendOrderConfirmation(
-                    user.email,
-                    user.name,
-                    updatedOrder.items,
-                    updatedOrder.amount,
-                    updatedOrder._id.toString()
-                )
+            // ── Send admin order alert after successful Razorpay payment ──
+            try {
+                const user = await User.findById(userId)
+                const customerName = user?.name || `${updatedOrder.address?.firstName || ''} ${updatedOrder.address?.lastName || ''}`.trim() || 'Customer'
+                const customerEmail = user?.email || updatedOrder.address?.email || 'Customer'
+
                 sendAdminOrderAlert({
-                    userName: user.name,
-                    userEmail: user.email,
+                    userName: customerName,
+                    userEmail: customerEmail,
                     items: updatedOrder.items,
                     amount: updatedOrder.amount,
                     address: updatedOrder.address,
                     paymentMethod: 'Razorpay',
                     orderId: updatedOrder._id.toString()
                 })
+            } catch (mailErr) {
+                console.error("Failed to trigger Razorpay order alert email:", mailErr)
             }
 
             res.status(200).json({ success: true, message: 'Payment Successful' })
