@@ -85,6 +85,20 @@ app.get("/api/test-order-alert", async (req, res) => {
   }
 });
 
+app.get("/api/test-cloudinary", async (req, res) => {
+  try {
+    const { pingCloudinary, configureCloudinary } = await import("./config/cloudinary.js");
+    const configStatus = configureCloudinary();
+    const pingResult = await pingCloudinary();
+    return res.status(200).json({
+      configStatus,
+      pingResult
+    });
+  } catch (err) {
+    return res.status(500).json({ status: "error", error: err.message });
+  }
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/product", productRoutes);

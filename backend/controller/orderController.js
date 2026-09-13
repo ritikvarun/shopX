@@ -6,10 +6,16 @@ import { sendOrderConfirmation, sendAdminOrderAlert, sendStatusUpdate } from '..
 dotenv.config()
 
 const currency = 'inr'
-const razorpayInstance = new razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET
-})
+
+const getRazorpayInstance = () => {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+        return null
+    }
+    return new razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET
+    })
+}
 
 // ── Place Order (COD) ────────────────────────────────────────
 export const placeOrder = async (req, res) => {
@@ -37,7 +43,7 @@ export const placeOrder = async (req, res) => {
             const customerName = user?.name || `${address?.firstName || ''} ${address?.lastName || ''}`.trim() || 'Customer'
             const customerEmail = user?.email || address?.email || 'Customer'
 
-            sendAdminOrderAlert({
+            const alertResult = await sendAdminOrderAlert({
                 userName: customerName,
                 userEmail: customerEmail,
                 items,
@@ -46,6 +52,7 @@ export const placeOrder = async (req, res) => {
                 paymentMethod: 'COD',
                 orderId: newOrder._id.toString()
             })
+            console.log("Order alert email sent result (COD):", alertResult ? "success" : "failed")
         } catch (mailErr) {
             console.error("Failed to trigger order alert email:", mailErr)
         }
@@ -81,13 +88,18 @@ export const placeOrderRazorpay = async (req, res) => {
         const newOrder = new Order(orderData)
         await newOrder.save()
 
+        const rzp = getRazorpayInstance()
+        if (!rzp) {
+            return res.status(500).json({ message: "Razorpay credentials not configured" })
+        }
+
         const options = {
             amount: amount * 100,
             currency: currency.toUpperCase(),
             receipt: newOrder._id.toString()
         }
 
-        razorpayInstance.orders.create(options, (error, order) => {
+        rzp.orders.create(options, (error, order) => {
             if (error) {
                 return res.status(500).json({ message: "Razorpay order creation failed", error: error.message })
             }
@@ -104,7 +116,13 @@ export const verifyRazorpay = async (req, res) => {
     try {
         const userId = req.userId
         const { razorpay_order_id } = req.body
-        const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id)
+
+        const rzp = getRazorpayInstance()
+        if (!rzp) {
+            return res.status(500).json({ message: "Razorpay credentials not configured" })
+        }
+
+        const orderInfo = await rzp.orders.fetch(razorpay_order_id)
 
         if (orderInfo.status === 'paid') {
             const updatedOrder = await Order.findByIdAndUpdate(
@@ -120,7 +138,7 @@ export const verifyRazorpay = async (req, res) => {
                 const customerName = user?.name || `${updatedOrder.address?.firstName || ''} ${updatedOrder.address?.lastName || ''}`.trim() || 'Customer'
                 const customerEmail = user?.email || updatedOrder.address?.email || 'Customer'
 
-                sendAdminOrderAlert({
+                const alertResult = await sendAdminOrderAlert({
                     userName: customerName,
                     userEmail: customerEmail,
                     items: updatedOrder.items,
@@ -129,6 +147,7 @@ export const verifyRazorpay = async (req, res) => {
                     paymentMethod: 'Razorpay',
                     orderId: updatedOrder._id.toString()
                 })
+                console.log("Order alert email sent result (Razorpay):", alertResult ? "success" : "failed")
             } catch (mailErr) {
                 console.error("Failed to trigger Razorpay order alert email:", mailErr)
             }

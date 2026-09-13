@@ -25,8 +25,8 @@ function Add() {
     const handleAddProduct = async (e) => {
         setLoading(true)
         e.preventDefault()
-        if (!image1 || !image2 || !image3 || !image4) {
-            toast.error("All 4 images are required"); setLoading(false); return
+        if (!image1) {
+            toast.error("Primary product image (Image 1) is required"); setLoading(false); return
         }
         if (!name || !description || !price) {
             toast.error("All fields are required"); setLoading(false); return
@@ -44,18 +44,20 @@ function Add() {
             formData.append("bestseller", bestseller)
             formData.append("sizes", JSON.stringify(sizes))
             formData.append("image1", image1)
-            formData.append("image2", image2)
-            formData.append("image3", image3)
-            formData.append("image4", image4)
+            formData.append("image2", image2 || image1)
+            formData.append("image3", image3 || image1)
+            formData.append("image4", image4 || image1)
             let result = await axios.post(serverUrl + "/api/product/addproduct", formData, { withCredentials: true })
-            toast.success("Product Added Successfully")
+            toast.success("Product Added Successfully!")
             if (result.data) {
                 setName(""); setDescription(""); setImage1(false); setImage2(false)
                 setImage3(false); setImage4(false); setPrice(""); setBestSeller(false)
                 setCategory("Men"); setSubCategory("TopWear"); setSizes([])
             }
         } catch (error) {
-            toast.error(error.response?.data?.message || "Add Product Failed")
+            console.error("Add product error:", error)
+            const errMsg = error.response?.data?.message || error.message || "Add Product Failed"
+            toast.error(errMsg)
         }
         setLoading(false)
     }
@@ -93,25 +95,31 @@ function Add() {
 
                         {/* Images */}
                         <div>
-                            <label className={labelClass}>Product Images (4 required)</label>
-                            <div className='flex gap-[12px] flex-wrap'>
+                            <div className='flex items-center justify-between mb-[6px]'>
+                                <label className={labelClass + ' mb-0'}>Product Images (Image 1 Required · 2-4 Optional)</label>
+                                <span className='text-[11px] text-gray-400'>Supports PNG, JPG, WEBP</span>
+                            </div>
+                            <div className='flex gap-[14px] flex-wrap'>
                                 {[
-                                    [image1, setImage1, 'image1'],
-                                    [image2, setImage2, 'image2'],
-                                    [image3, setImage3, 'image3'],
-                                    [image4, setImage4, 'image4'],
-                                ].map(([img, setImg, id]) => (
-                                    <label key={id} htmlFor={id} className='cursor-pointer'>
-                                        <div className={`w-[90px] h-[90px] rounded-xl border-2 overflow-hidden transition-all
-                                            ${img ? 'border-black' : 'border-dashed border-gray-300 hover:border-gray-500 bg-gray-50'}`}>
-                                            <img
-                                                src={img ? URL.createObjectURL(img) : upload}
-                                                alt=""
-                                                className='w-full h-full object-cover'
-                                            />
-                                        </div>
-                                        <input type="file" id={id} hidden onChange={(e) => setImg(e.target.files[0])} />
-                                    </label>
+                                    [image1, setImage1, 'image1', 'Main *'],
+                                    [image2, setImage2, 'image2', 'Image 2'],
+                                    [image3, setImage3, 'image3', 'Image 3'],
+                                    [image4, setImage4, 'image4', 'Image 4'],
+                                ].map(([img, setImg, id, label]) => (
+                                    <div key={id} className='flex flex-col items-center gap-[4px]'>
+                                        <label htmlFor={id} className='cursor-pointer'>
+                                            <div className={`w-[90px] h-[90px] rounded-xl border-2 overflow-hidden transition-all relative
+                                                ${img ? 'border-black ring-2 ring-black/10' : 'border-dashed border-gray-300 hover:border-gray-500 bg-gray-50'}`}>
+                                                <img
+                                                    src={img ? URL.createObjectURL(img) : upload}
+                                                    alt=""
+                                                    className='w-full h-full object-cover'
+                                                />
+                                            </div>
+                                            <input type="file" id={id} accept="image/*" hidden onChange={(e) => setImg(e.target.files[0])} />
+                                        </label>
+                                        <span className='text-[11px] font-medium text-gray-500'>{label}</span>
+                                    </div>
                                 ))}
                             </div>
                         </div>

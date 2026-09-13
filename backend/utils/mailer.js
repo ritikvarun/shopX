@@ -3,12 +3,20 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 // ── Helper: send email safely (never crashes server) ─────────
+const getAdminEmail = () => {
+    const rawEmail = process.env.ADMIN_EMAIL
+    if (rawEmail && !rawEmail.includes('example.com') && rawEmail.includes('@')) {
+        return rawEmail.trim()
+    }
+    return 'ritikvarun64@gmail.com'
+}
+
 const sendMail = async (options) => {
     try {
         const apiKey = process.env.RESEND_API_KEY
         if (!apiKey) {
             console.error('❌ [ShopX Mailer] RESEND_API_KEY is missing in environment variables!')
-            return null
+            return { error: 'RESEND_API_KEY is missing' }
         }
 
         const resend = new Resend(apiKey)
@@ -30,7 +38,7 @@ const sendMail = async (options) => {
         return response
     } catch (err) {
         console.error(`❌ [ShopX Mailer] Exception in sendMail to ${options.to}:`, err.message)
-        return null
+        return { error: err.message }
     }
 }
 
@@ -42,7 +50,7 @@ export const sendOrderConfirmation = async (userEmail, userName, items, totalAmo
 // ── 2. Admin: New Order Alert ─────────────────────────────────
 export const sendAdminOrderAlert = async (orderDetails) => {
     try {
-        const adminEmail = process.env.ADMIN_EMAIL || 'ritikvarun64@gmail.com'
+        const adminEmail = getAdminEmail()
         const { userName, userEmail, items, amount, address, paymentMethod, orderId } = orderDetails || {}
 
         const itemList = Array.isArray(items)
