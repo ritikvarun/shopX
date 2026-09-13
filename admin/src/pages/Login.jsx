@@ -4,7 +4,7 @@ import { IoEyeOutline, IoEye } from "react-icons/io5";
 import axios from 'axios'
 import { authDataContext } from '../context/AuthContext';
 import { adminDataContext } from '../context/AdminContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 function Login() {
@@ -14,7 +14,10 @@ function Login() {
     let { serverUrl } = useContext(authDataContext)
     let { getAdmin } = useContext(adminDataContext)
     let navigate = useNavigate()
+    let location = useLocation()
     const [loading, setLoading] = useState(false)
+
+    const from = location.state?.from?.pathname || "/"
 
     const AdminLogin = async (e) => {
         setLoading(true)
@@ -25,8 +28,8 @@ function Login() {
                 localStorage.setItem("adminToken", result.data.token)
             }
             toast.success("Admin Login Successful")
-            getAdmin()
-            navigate("/")
+            await getAdmin()
+            navigate(from, { replace: true })
         } catch (error) {
             toast.error("Admin Login Failed")
         }
