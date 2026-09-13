@@ -17,9 +17,9 @@ export const addReview = async (req, res) => {
         
         let hasPurchased = false;
         outerLoop: for (const order of userOrders) {
-            for (const item of order.items) {
-                // Ensure comparing strings
-                if (item._id.toString() === productId.toString()) {
+            for (const item of (order.items || [])) {
+                const itemId = item._id ? item._id.toString() : (item.id ? item.id.toString() : '')
+                if (itemId && itemId === productId.toString()) {
                     hasPurchased = true;
                     break outerLoop;
                 }

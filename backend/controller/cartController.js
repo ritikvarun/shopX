@@ -43,48 +43,55 @@ export const addToCart = async (req,res) => {
 }
 
 
-export const UpdateCart = async (req,res) => {
-     try {
-         const {itemId , size , quantity } = req.body
-         const userData = await User.findById(req.userId)
-         let cartData = await userData.cartData;
+export const UpdateCart = async (req, res) => {
+    try {
+        const { itemId, size, quantity } = req.body;
+        if (!itemId || !size) {
+            return res.status(400).json({ message: "Item ID and size are required" });
+        }
 
-         cartData[itemId][size] = quantity
+        const userData = await User.findById(req.userId);
+        if (!userData) {
+            return res.status(404).json({ message: "User not found" });
+        }
 
-          await User.findByIdAndUpdate(req.userId,{cartData})
+        let cartData = userData.cartData ? { ...userData.cartData } : {};
 
-    return res.status(201).json({message:"cart updated"})
+        if (Number(quantity) <= 0) {
+            if (cartData[itemId]) {
+                delete cartData[itemId][size];
+                if (Object.keys(cartData[itemId]).length === 0) {
+                    delete cartData[itemId];
+                }
+            }
+        } else {
+            if (!cartData[itemId]) {
+                cartData[itemId] = {};
+            }
+            cartData[itemId][size] = Number(quantity);
+        }
 
-
-
+        await User.findByIdAndUpdate(req.userId, { cartData });
+        return res.status(200).json({ message: "Cart updated", cartData });
 
     } catch (error) {
-         console.log(error)
-    return res.status(500).json({message:"updateCart error"})
+        console.error("UpdateCart error:", error);
+        return res.status(500).json({ message: "updateCart error: " + error.message });
     }
-    
-    
-
-    
 }
 
-export const getUserCart = async (req,res) => {
+export const getUserCart = async (req, res) => {
+    try {
+        const userData = await User.findById(req.userId);
+        if (!userData) {
+            return res.status(404).json({ message: "User not found" });
+        }
 
-     try {
-         
-         const userData = await User.findById(req.userId)
-         let cartData = await userData.cartData;
-
-
-    return res.status(200).json(cartData)
-
-
-
+        const cartData = userData.cartData || {};
+        return res.status(200).json(cartData);
 
     } catch (error) {
-         console.log(error)
-    return res.status(500).json({message:"getUserCart error"})
+        console.error("getUserCart error:", error);
+        return res.status(500).json({ message: "getUserCart error: " + error.message });
     }
-    
-    
 }

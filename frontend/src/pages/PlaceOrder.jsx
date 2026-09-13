@@ -1,8 +1,9 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import CartTotal from '../component/CartTotal'
 import razorpay from '../assets/Razorpay.jpg'
 import { shopDataContext } from '../context/ShopContext'
 import { authDataContext } from '../context/AuthContext'
+import { userDataContext } from '../context/UserContext'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -15,13 +16,28 @@ function PlaceOrder() {
     const navigate = useNavigate()
     const { cartItem, setCartItem, getCartAmount, delivery_fee, products } = useContext(shopDataContext)
     const { serverUrl } = useContext(authDataContext)
+    const { userData } = useContext(userDataContext)
     const [loading, setLoading] = useState(false)
 
     const [formData, setFormData] = useState({
         firstName: '', lastName: '', email: '',
-        street: '', city: '',
+        street: '', city: '', state: '',
         pinCode: '', phone: ''
     })
+
+    useEffect(() => {
+        if (userData) {
+            const parts = (userData.name || '').trim().split(' ')
+            const fName = parts[0] || ''
+            const lName = parts.slice(1).join(' ') || ''
+            setFormData(prev => ({
+                ...prev,
+                firstName: prev.firstName || fName,
+                lastName: prev.lastName || lName,
+                email: prev.email || userData.email || ''
+            }))
+        }
+    }, [userData])
 
     const onChangeHandler = (e) => {
         const { name, value } = e.target
@@ -188,10 +204,16 @@ function PlaceOrder() {
                                         <input type="text" placeholder='Enter street address' className={inputClass} required onChange={onChangeHandler} name='street' value={formData.street} />
                                     </div>
 
-                                    {/* City */}
-                                    <div>
-                                        <label className='text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-[6px] block'>City</label>
-                                        <input type="text" placeholder='Enter city' className={inputClass} required onChange={onChangeHandler} name='city' value={formData.city} />
+                                    {/* City & State */}
+                                    <div className='flex gap-[12px]'>
+                                        <div className='flex-1'>
+                                            <label className='text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-[6px] block'>City</label>
+                                            <input type="text" placeholder='Enter city' className={inputClass} required onChange={onChangeHandler} name='city' value={formData.city} />
+                                        </div>
+                                        <div className='flex-1'>
+                                            <label className='text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-[6px] block'>State</label>
+                                            <input type="text" placeholder='Enter state' className={inputClass} required onChange={onChangeHandler} name='state' value={formData.state} />
+                                        </div>
                                     </div>
 
                                     {/* Pincode */}

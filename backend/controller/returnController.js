@@ -35,17 +35,21 @@ export const requestReturn = async (req, res) => {
         })
         await returnRequest.save()
 
-        const user = await User.findById(userId)
-        if (user) {
-            sendReturnRequestEmail(user.email, user.name, {
-                itemName, reason, actionType, returnId: returnRequest._id.toString()
-            })
-            sendAdminReturnAlert(process.env.ADMIN_EMAIL, {
-                userName: user.name, userEmail: user.email,
-                itemName, reason, description,
-                actionType, refundMethod, refundDetails,
-                returnId: returnRequest._id.toString()
-            })
+        try {
+            const user = await User.findById(userId)
+            if (user) {
+                await sendReturnRequestEmail(user.email, user.name, {
+                    itemName, reason, actionType, returnId: returnRequest._id.toString()
+                })
+                await sendAdminReturnAlert(null, {
+                    userName: user.name, userEmail: user.email,
+                    itemName, reason, description,
+                    actionType, refundMethod, refundDetails,
+                    returnId: returnRequest._id.toString()
+                })
+            }
+        } catch (mailErr) {
+            console.error("Return alert email failed:", mailErr.message)
         }
 
         return res.status(201).json({ message: 'Return request submitted', returnId: returnRequest._id })
@@ -86,11 +90,15 @@ export const updateReturnStatus = async (req, res) => {
         )
         if (!returnReq) return res.status(404).json({ message: 'Return not found' })
 
-        const user = await User.findById(returnReq.userId)
-        if (user) {
-            sendReturnStatusEmail(user.email, user.name, {
-                status, adminNote, itemName: returnReq.itemName, returnId
-            })
+        try {
+            const user = await User.findById(returnReq.userId)
+            if (user) {
+                await sendReturnStatusEmail(user.email, user.name, {
+                    status, adminNote, itemName: returnReq.itemName, returnId
+                })
+            }
+        } catch (mailErr) {
+            console.error("Status update email failed:", mailErr.message)
         }
         return res.status(200).json({ message: 'Return status updated' })
     } catch (error) {

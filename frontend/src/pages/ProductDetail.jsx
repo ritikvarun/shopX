@@ -84,7 +84,7 @@ function ProductDetail() {
 
     if (!productData) return <div className='opacity-0' />
 
-    const thumbnails = [image1, image2, image3, image4]
+    const thumbnails = [image1, image2, image3, image4].filter((img, idx, arr) => img && typeof img === 'string' && arr.indexOf(img) === idx)
 
     return (
         <div className='min-h-screen bg-white pt-[60px] pb-[100px] md:pt-[90px] md:pb-0'>
@@ -96,18 +96,20 @@ function ProductDetail() {
                     {/* ── Image Gallery ── */}
                     <div className='lg:w-[55%] flex flex-col-reverse lg:flex-row gap-[14px] -mx-[20px] md:mx-0'>
                         {/* Thumbnails */}
-                        <div className='flex lg:flex-col gap-[10px] overflow-x-auto lg:overflow-visible px-[20px] md:px-0 no-scrollbar'>
-                            {thumbnails.map((img, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => setImage(img)}
-                                    className={`flex-shrink-0 w-[64px] h-[64px] md:w-[72px] md:h-[72px] rounded-[16px] overflow-hidden border-2 transition-all active:scale-95
-                                        ${image === img ? 'border-black' : 'border-transparent hover:border-gray-400'}`}
-                                >
-                                    <img src={img} alt="" className='w-full h-full object-cover' />
-                                </button>
-                            ))}
-                        </div>
+                        {thumbnails.length > 1 && (
+                            <div className='flex lg:flex-col gap-[10px] overflow-x-auto lg:overflow-visible px-[20px] md:px-0 no-scrollbar'>
+                                {thumbnails.map((img, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setImage(img)}
+                                        className={`flex-shrink-0 w-[64px] h-[64px] md:w-[72px] md:h-[72px] rounded-[16px] overflow-hidden border-2 transition-all active:scale-95
+                                            ${image === img ? 'border-black' : 'border-transparent hover:border-gray-400'}`}
+                                    >
+                                        <img src={img} alt="" className='w-full h-full object-cover' />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                         {/* Main image */}
                         <div className='flex-1 md:rounded-3xl overflow-hidden bg-gray-50 border-b md:border border-gray-100'>
                             <img

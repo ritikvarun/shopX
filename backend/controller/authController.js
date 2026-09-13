@@ -114,13 +114,16 @@ export const googleLogin = async (req,res) => {
 
 export const adminLogin = async (req,res) => {
     try {
-        let {email , password} = req.body
-        if(email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD){
-        let token = await genToken1(email)
-        res.cookie("token", token, adminCookieOptions)
-        return res.status(200).json({ token })
+        let { email, password } = req.body
+        const inputEmail = (email || '').trim().toLowerCase()
+        const configEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase()
+
+        if (inputEmail && configEmail && inputEmail === configEmail && password === process.env.ADMIN_PASSWORD) {
+            let token = await genToken1(process.env.ADMIN_EMAIL)
+            res.cookie("token", token, adminCookieOptions)
+            return res.status(200).json({ token })
         }
-        return res.status(400).json({message:"Invaild creadintials"})
+        return res.status(400).json({ message: "Invalid credentials" })
 
     } catch (error) {
         console.log("AdminLogin error")

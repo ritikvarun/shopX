@@ -17,7 +17,7 @@ import LoginModal from './component/LoginModal'
 
 function AdminRedirect() {
   React.useEffect(() => {
-    const adminUrl = import.meta.env.VITE_ADMIN_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5174' : 'https://shopx-admin.vercel.app')
+    const adminUrl = import.meta.env.VITE_ADMIN_URL || (window.location.hostname === 'localhost' ? 'http://localhost:5174' : 'https://shopx-admin-ktdc.onrender.com')
     window.location.href = adminUrl
   }, [])
   return (

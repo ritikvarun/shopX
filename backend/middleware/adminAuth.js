@@ -38,8 +38,15 @@ const adminAuth = async (req, res, next) => {
         if (!verifyToken) {
             return res.status(401).json({ message: "Not Authorized Login Again, Invalid token" })
         }
-        req.adminEmail = process.env.ADMIN_EMAIL
 
+        const configuredAdminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase()
+        const tokenEmail = (verifyToken.email || '').trim().toLowerCase()
+
+        if (!tokenEmail || (configuredAdminEmail && tokenEmail !== configuredAdminEmail)) {
+            return res.status(403).json({ message: "Forbidden: Not authorized as admin" })
+        }
+
+        req.adminEmail = verifyToken.email
         next()
 
     } catch (error) {

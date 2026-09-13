@@ -97,58 +97,71 @@ function ShopContext({children}) {
     }
       
     }
-    const updateQuantity = async (itemId , size , quantity) => {
-      let cartData = structuredClone(cartItem);
-    cartData[itemId][size] = quantity
-    setCartItem(cartData)
+    const updateQuantity = async (itemId, size, quantity) => {
+      let cartData = structuredClone(cartItem || {});
+      const qty = Number(quantity);
 
-    if (userData) {
-      try {
-        const token = localStorage.getItem("token")
-        await axios.post(serverUrl + "/api/cart/update", { itemId, size, quantity }, {
-          withCredentials: true,
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
-        })
-      } catch (error) {
-        console.log(error)
-        
-      }
-    }
-      
-    }
-     const getCartCount = () => {
-    let totalCount = 0;
-    for (const items in cartItem) {
-      for (const item in cartItem[items]) {
-        try {
-          if (cartItem[items][item] > 0) {
-            totalCount += 1; // Count each unique product-size combination as 1
+      if (qty <= 0) {
+        if (cartData[itemId]) {
+          delete cartData[itemId][size];
+          if (Object.keys(cartData[itemId]).length === 0) {
+            delete cartData[itemId];
           }
-        } catch (error) {
+        }
+      } else {
+        if (!cartData[itemId]) {
+          cartData[itemId] = {};
+        }
+        cartData[itemId][size] = qty;
+      }
+      setCartItem(cartData);
 
+      if (userData) {
+        try {
+          const token = localStorage.getItem("token");
+          await axios.post(serverUrl + "/api/cart/update", { itemId, size, quantity: qty }, {
+            withCredentials: true,
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+          });
+        } catch (error) {
+          console.log("updateQuantity API error:", error);
         }
       }
     }
-    return totalCount
-  }
 
-  const getCartAmount = () => {
-  let totalAmount = 0;
-    for (const items in cartItem) {
-      let itemInfo = products.find((product) => product._id === items);
-      for (const item in cartItem[items]) {
-        try {
-          if (cartItem[items][item] > 0) {
-            totalAmount += itemInfo.price * cartItem[items][item];
+    const getCartCount = () => {
+      let totalCount = 0;
+      for (const items in cartItem) {
+        for (const item in cartItem[items]) {
+          try {
+            if (cartItem[items][item] > 0) {
+              totalCount += 1;
+            }
+          } catch (error) {
+            console.log(error);
           }
-        } catch (error) {
-
         }
       }
+      return totalCount;
     }
-    return totalAmount
-    
-  }
+
+    const getCartAmount = () => {
+      let totalAmount = 0;
+      for (const items in cartItem) {
+        let itemInfo = products.find((product) => product._id === items);
+        if (!itemInfo) continue;
+        for (const item in cartItem[items]) {
+          try {
+            if (cartItem[items][item] > 0) {
+              totalAmount += (itemInfo.price || 0) * cartItem[items][item];
+            }
+          } catch (error) {
+            console.log(error);
+          }
+        }
+      }
+      return totalAmount;
+    }
 
     useEffect(()=>{
      getProducts()

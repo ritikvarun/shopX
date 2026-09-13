@@ -100,7 +100,7 @@ export const sendAdminOrderAlert = async (orderDetails) => {
                     </div>
                     <p style="margin:16px 0 0;color:#6b7280;font-size:13px;">⏰ Time (IST): <b>${formattedTime}</b></p>
                     <div style="margin-top:20px;text-align:center;">
-                        <a href="${(process.env.ADMIN_URL || (process.env.NODE_ENV === 'production' ? 'https://shopx-admin.vercel.app' : 'http://localhost:5174')).replace(/\/$/, '')}/orders"
+                        <a href="${(process.env.ADMIN_URL || (process.env.NODE_ENV === 'production' ? 'https://shopx-admin-ktdc.onrender.com' : 'http://localhost:5174')).replace(/\/$/, '')}/orders"
                            style="background:#000;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">
                             View in Admin Panel →
                         </a>
@@ -118,7 +118,7 @@ export const sendAdminOrderAlert = async (orderDetails) => {
 // ── 3. Admin: New User Registration Alert ─────────────────────
 export const sendAdminNewUserAlert = async (userName, userEmail, method = 'Standard') => {
     try {
-        const adminEmail = process.env.ADMIN_EMAIL || 'ritikvarun64@gmail.com'
+        const adminEmail = getAdminEmail()
         const formattedTime = new Date().toLocaleString("en-IN", {
             timeZone: "Asia/Kolkata",
             dateStyle: "medium",
@@ -144,7 +144,7 @@ export const sendAdminNewUserAlert = async (userName, userEmail, method = 'Stand
                         <p style="margin:4px 0;color:#6b7280;font-size:13px;">⏰ Time (IST): <b>${formattedTime}</b></p>
                     </div>
                     <div style="margin-top:20px;text-align:center;">
-                        <a href="${(process.env.ADMIN_URL || (process.env.NODE_ENV === 'production' ? 'https://shopx-admin.vercel.app' : 'http://localhost:5174')).replace(/\/$/, '')}/users"
+                        <a href="${(process.env.ADMIN_URL || (process.env.NODE_ENV === 'production' ? 'https://shopx-admin-ktdc.onrender.com' : 'http://localhost:5174')).replace(/\/$/, '')}/users"
                            style="background:#000;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">
                             View Users in Admin Panel →
                         </a>
@@ -174,7 +174,7 @@ export const sendReturnRequestEmail = async (userEmail, userName, details) => {
 // ── 6. Admin: Return Alert ────────────────────────────────────
 export const sendAdminReturnAlert = async (adminEmail, { userName, userEmail, itemName, reason, description, actionType, refundMethod, refundDetails, returnId }) => {
     try {
-        const targetEmail = adminEmail || process.env.ADMIN_EMAIL || 'ritikvarun64@gmail.com'
+        const targetEmail = adminEmail && !adminEmail.includes('example.com') && adminEmail.includes('@') ? adminEmail.trim() : getAdminEmail()
 
         return await sendMail({
             to: targetEmail,
@@ -212,7 +212,7 @@ export const sendAdminReturnAlert = async (adminEmail, { userName, userEmail, it
                     </div>
                     `}
                     <div style="margin-top:20px;text-align:center;">
-                        <a href="${(process.env.ADMIN_URL || (process.env.NODE_ENV === 'production' ? 'https://shopx-admin.vercel.app' : 'http://localhost:5174')).replace(/\/$/, '')}/returns"
+                        <a href="${(process.env.ADMIN_URL || (process.env.NODE_ENV === 'production' ? 'https://shopx-admin-ktdc.onrender.com' : 'http://localhost:5174')).replace(/\/$/, '')}/returns"
                            style="background:#000;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;display:inline-block;">
                             View Returns Panel →
                         </a>

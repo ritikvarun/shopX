@@ -23,24 +23,21 @@ function Collections() {
         setSubCategory(prev => prev.includes(val) ? prev.filter(i => i !== val) : [...prev, val])
     }
 
-    const applyFilter = () => {
+    const applyFilterAndSort = () => {
         let copy = products.slice()
         if (showSearch && search) copy = copy.filter(i => i.name.toLowerCase().includes(search.toLowerCase()))
         if (category.length > 0) copy = copy.filter(i => category.includes(i.category))
         if (subCategory.length > 0) copy = copy.filter(i => subCategory.includes(i.subCategory))
+
+        if (sortType === 'low-high') copy.sort((a, b) => a.price - b.price)
+        else if (sortType === 'high-low') copy.sort((a, b) => b.price - a.price)
+
         setFilterProduct(copy)
     }
 
-    const sortProducts = () => {
-        let copy = filterProduct.slice()
-        if (sortType === 'low-high') setFilterProduct(copy.sort((a, b) => a.price - b.price))
-        else if (sortType === 'high-low') setFilterProduct(copy.sort((a, b) => b.price - a.price))
-        else applyFilter()
-    }
-
-    useEffect(() => { sortProducts() }, [sortType])
-    useEffect(() => { setFilterProduct(products) }, [products])
-    useEffect(() => { applyFilter() }, [category, subCategory, search, showSearch])
+    useEffect(() => { 
+        applyFilterAndSort() 
+    }, [products, category, subCategory, search, showSearch, sortType])
 
     const FilterPanel = () => (
         <div className='flex flex-col gap-[20px]'>
