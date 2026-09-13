@@ -20,6 +20,7 @@ let app = express();
 const localOrigins = [
   "https://shopx-50ym.onrender.com", 
   "https://shopx-admin-ktdc.onrender.com",
+  "https://shopx-6u3e.onrender.com",
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:3000"
