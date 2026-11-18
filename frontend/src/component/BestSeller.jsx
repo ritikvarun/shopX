@@ -3,9 +3,10 @@ import { FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import Title from './Title'
 import { shopDataContext } from '../context/ShopContext'
 import Card from './Card'
+import ProductLoadingState from './ProductLoadingState'
 
 function BestSeller() {
-    let { products } = useContext(shopDataContext)
+    let { products, productsLoading, productsError } = useContext(shopDataContext)
     let [bestSeller, setBestSeller] = useState([])
     const scrollRef = useRef(null)
 
@@ -43,6 +44,7 @@ function BestSeller() {
                 </div>
 
                 {/* 2-Row Horizontal Scroll Container */}
+                {productsLoading || productsError ? <ProductLoadingState horizontal /> : (
                 <div ref={scrollRef} className='grid grid-rows-2 grid-flow-col auto-cols-max overflow-x-auto gap-[20px] pb-[20px] snap-x snap-mandatory no-scrollbar'>
                     {bestSeller.map((item, index) => (
                         <div key={index} className='w-[160px] sm:w-[200px] lg:w-[260px] snap-start'>
@@ -50,6 +52,7 @@ function BestSeller() {
                         </div>
                     ))}
                 </div>
+                )}
             </div>
         </section>
     )

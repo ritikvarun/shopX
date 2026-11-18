@@ -1,3 +1,4 @@
+import ContentManager from './pages/ContentManager'
 import React, { useContext } from 'react'
 import { Route, Routes, Navigate, useLocation } from 'react-router-dom'
 import Home from './pages/Home'
@@ -49,7 +50,7 @@ function App() {
         <Route path='/order' element={<ProtectedAdminRoute><Orders /></ProtectedAdminRoute>} />
         <Route path='/returns' element={<ProtectedAdminRoute><Returns /></ProtectedAdminRoute>} />
         <Route path='/return' element={<ProtectedAdminRoute><Returns /></ProtectedAdminRoute>} />
-        <Route path='/banners' element={<ProtectedAdminRoute><Banners /></ProtectedAdminRoute>} />
+        <Route path='/banners' element={<ProtectedAdminRoute><ContentManager kind='heroBanners'/></ProtectedAdminRoute>}/><Route path='/home-sections' element={<ProtectedAdminRoute><ContentManager kind='homeSections'/></ProtectedAdminRoute>}/><Route path='/categories' element={<ProtectedAdminRoute><ContentManager kind='customCategories'/></ProtectedAdminRoute>}/>
         <Route path='/banner' element={<ProtectedAdminRoute><Banners /></ProtectedAdminRoute>} />
         <Route path='*' element={<ProtectedAdminRoute><Home /></ProtectedAdminRoute>} />
       </Routes>

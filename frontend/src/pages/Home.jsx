@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import { shopDataContext } from '../context/ShopContext'
+import StoreSections from '../component/StoreSections'
+import React, { useContext, useEffect, useState } from 'react'
 import Backgound from '../component/Backgound'
 import LatestCollection from '../component/LatestCollection'
 import BestSeller from '../component/BestSeller'
@@ -7,6 +9,8 @@ import NewLetterBox from '../component/NewLetterBox'
 import Footer from '../component/Footer'
 
 function Home() {
+    const {settings} = useContext(shopDataContext)
+    const slideCount = settings.heroBanners?.length || 4
     const heroData = [
         { tag: "Limited Offer", heading: "30% OFF This Season", sub: "Shop the trendiest styles at unbeatable prices" },
         { tag: "New Arrivals", heading: "Bold Fashion Awaits", sub: "Discover our freshest collection — just dropped" },
@@ -18,10 +22,10 @@ function Home() {
 
     useEffect(() => {
         let interval = setInterval(() => {
-            setHeroCount(prevCount => (prevCount === 3 ? 0 : prevCount + 1))
+            setHeroCount(prevCount => ((prevCount + 1) % slideCount))
         }, 3500)
         return () => clearInterval(interval)
-    }, [])
+    }, [slideCount])
 
     return (
         <div className='overflow-x-hidden relative top-[70px]'>
@@ -30,7 +34,7 @@ function Home() {
                 <Backgound heroCount={heroCount} />
                 {/* Slide dots */}
                 <div className='absolute bottom-[24px] left-1/2 -translate-x-1/2 flex gap-[8px] z-10'>
-                    {[0, 1, 2, 3].map((i) => (
+                    {Array.from({length:slideCount}, (_,i)=>i).map((i) => (
                         <button
                             key={i}
                             onClick={() => setHeroCount(i)}
@@ -40,7 +44,7 @@ function Home() {
                 </div>
             </div>
 
-            <LatestCollection />
+            <StoreSections /><LatestCollection />
             <BestSeller />
             <OurPolicy />
             <NewLetterBox />

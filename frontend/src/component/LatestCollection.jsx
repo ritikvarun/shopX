@@ -1,12 +1,13 @@
 import React from 'react'
 import Title from '../component/Title'
 import Card from './Card'
+import ProductLoadingState from './ProductLoadingState'
 import { useContext, useEffect, useState, useRef } from 'react'
 import { shopDataContext } from '../context/ShopContext'
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 
 function LatestCollection() {
-    let { products } = useContext(shopDataContext)
+    let { products, productsLoading, productsError } = useContext(shopDataContext)
     let [latestProducts, setLatestProducts] = useState([])
     const scrollRef = useRef(null)
 
@@ -43,6 +44,7 @@ function LatestCollection() {
                 </div>
                 
                 {/* 2-Row Horizontal Scroll Container */}
+                {productsLoading || productsError ? <ProductLoadingState horizontal /> : (
                 <div ref={scrollRef} className='grid grid-rows-2 grid-flow-col overflow-x-auto gap-[20px] pb-[20px] snap-x snap-mandatory no-scrollbar place-items-center'>
                     {latestProducts.map((item, index) => (
                         <div key={index} className='w-[160px] sm:w-[200px] lg:w-[260px] snap-start flex justify-center'>
@@ -50,6 +52,7 @@ function LatestCollection() {
                         </div>
                     ))}
                 </div>
+                )}
             </div>
         </section>
     )

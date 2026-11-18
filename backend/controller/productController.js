@@ -14,6 +14,9 @@ export const addProduct = async (req, res) => {
             return res.status(400).json({ message: "All fields are required" })
         }
 
+        let variants
+        try { variants = typeof sizes === 'string' ? JSON.parse(sizes) : sizes } catch { return res.status(400).json({message:'Invalid variants'}) }
+        if (!Number.isFinite(Number(price)) || Number(price) <= 0 || !Array.isArray(variants) || !variants.length || variants.length > 100 || variants.some(v=>typeof v !== 'string' || !v.trim() || v.length > 40)) return res.status(400).json({message:'Valid price and at least one size or packaging variant are required'})
         if (!req.files || Object.keys(req.files).length === 0) {
             return res.status(400).json({ message: "No files received: check multipart/form-data and that files are attached" })
         }
@@ -72,6 +75,8 @@ export const addProduct = async (req, res) => {
             parsedSizes = Array.isArray(sizes) ? sizes : [sizes]
         }
         
+        const image5Path = getFilePath('image5')
+        const image5 = image5Path ? await uploadOnCloudinary(image5Path, 'shopx') : ''
         let productData = {
             name,
             description,
@@ -84,7 +89,8 @@ export const addProduct = async (req, res) => {
             image1,
             image2,
             image3,
-            image4
+            image4,
+            image5
         }
 
         const product = await Product.create(productData)

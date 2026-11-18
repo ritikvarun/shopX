@@ -47,10 +47,6 @@ function Banners() {
     }
 
     const imageSlots = [
-        { key: 'homeBanner1', title: 'Home Banner 1 (Limited Offer)' },
-        { key: 'homeBanner2', title: 'Home Banner 2 (New Arrivals)' },
-        { key: 'homeBanner3', title: 'Home Banner 3 (Top Picks)' },
-        { key: 'homeBanner4', title: 'Home Banner 4 (Sale Live)' },
         { key: 'aboutBanner', title: 'About Us Image' }
     ]
 

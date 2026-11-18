@@ -7,6 +7,7 @@ import { MdLocalShipping, MdAssignmentReturn, MdOutlineShoppingCart } from "reac
 import { RiShieldCheckLine } from "react-icons/ri"
 import RelatedProduct from '../component/RelatedProduct'
 import Loading from '../component/Loading'
+import ProductLoadingState from '../component/ProductLoadingState'
 import Footer from '../component/Footer'
 
 import { authDataContext } from '../context/AuthContext'
@@ -18,7 +19,7 @@ function ProductDetail() {
     let navigate = useNavigate()
     let { serverUrl } = useContext(authDataContext)
     let { userData } = useContext(userDataContext)
-    let { products, currency, addtoCart, loading, cartItem } = useContext(shopDataContext)
+    let { products, productsLoading, productsError, currency, addtoCart, loading, cartItem } = useContext(shopDataContext)
     let [productData, setProductData] = useState(false)
     const [reviews, setReviews] = useState([])
     const [averageRating, setAverageRating] = useState(0)
@@ -82,9 +83,22 @@ function ProductDetail() {
         }
     }
 
-    if (!productData) return <div className='opacity-0' />
+    if (productsLoading || productsError) return (
+        <div className='min-h-screen bg-white pt-[90px] pb-[100px]'>
+            <div className='max-w-[1200px] mx-auto px-[20px] md:px-[24px] py-[40px]'>
+                <ProductLoadingState detail />
+            </div>
+        </div>
+    )
 
-    const thumbnails = [image1, image2, image3, image4].filter((img, idx, arr) => img && typeof img === 'string' && arr.indexOf(img) === idx)
+    if (!productData) return (
+        <div className='min-h-screen pt-[140px] px-[20px] text-center'>
+            <p className='text-gray-600'>Product not found.</p>
+            <button onClick={() => navigate('/collections')} className='mt-[16px] rounded-xl bg-black text-white px-[24px] py-[10px]'>Browse products</button>
+        </div>
+    )
+
+    const thumbnails = [image1, image2, image3, image4, productData.image5].filter((img, idx, arr) => img && typeof img === 'string' && arr.indexOf(img) === idx)
 
     return (
         <div className='min-h-screen bg-white pt-[60px] pb-[100px] md:pt-[90px] md:pb-0'>
@@ -155,13 +169,13 @@ function ProductDetail() {
 
                         {/* Size selector */}
                         <div>
-                            <p className='text-[13px] font-bold text-gray-700 uppercase tracking-wide mb-[10px]'>Select Size</p>
+                            <p className='text-[13px] font-bold text-gray-700 uppercase tracking-wide mb-[10px]'>Select Size / Pack</p>
                             <div className='flex flex-wrap gap-[8px]'>
                                 {productData.sizes.map((s, i) => (
                                     <button
                                         key={i}
                                         onClick={() => setSize(s)}
-                                        className={`w-[52px] h-[46px] rounded-xl text-[14px] font-semibold border-2 transition-all
+                                        className={`min-w-[52px] px-3 h-[46px] rounded-xl text-[14px] font-semibold border-2 transition-all
                                             ${s === size ? 'border-black bg-black text-white' : 'border-gray-200 text-gray-700 hover:border-gray-400'}`}
                                     >
                                         {s}
@@ -195,7 +209,7 @@ function ProductDetail() {
                                 disabled={!size || loading}
                                 className='w-full h-[52px] rounded-xl bg-black text-white font-semibold text-[15px] flex items-center justify-center hover:bg-gray-800 transition-all disabled:opacity-40 disabled:cursor-not-allowed mt-[4px]'
                             >
-                                {loading ? <Loading /> : size ? 'Add to Cart' : 'Select a Size'}
+                                {loading ? <Loading /> : size ? 'Add to Cart' : 'Select a Size / Pack'}
                             </button>
                         )}
 
@@ -340,7 +354,7 @@ function ProductDetail() {
                             disabled={!size || loading}
                             className='h-[48px] bg-black text-white px-[30px] rounded-full font-bold text-[14px] active:scale-95 transition-all duration-300 disabled:opacity-50 flex items-center justify-center shadow-[0_8px_20px_rgba(0,0,0,0.2)]'
                         >
-                            {loading ? <Loading /> : size ? 'Add to Cart' : 'Select Size'}
+                            {loading ? <Loading /> : size ? 'Add to Cart' : 'Select Size / Pack'}
                         </button>
                     )}
                 </div>

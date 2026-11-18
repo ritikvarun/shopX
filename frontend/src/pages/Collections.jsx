@@ -1,20 +1,26 @@
+import {useSearchParams} from 'react-router-dom'
 import React, { useContext, useEffect, useState } from 'react'
 import { FiFilter, FiX, FiChevronDown } from "react-icons/fi"
 import Title from '../component/Title'
 import { shopDataContext } from '../context/ShopContext'
 import Card from '../component/Card'
+import ProductLoadingState from '../component/ProductLoadingState'
 import Footer from '../component/Footer'
 
 const CATEGORIES = ['Men', 'Women', 'Kids', 'Unisex']
 const SUB_CATEGORIES = ['TopWear', 'BottomWear', 'WinterWear', 'Shoes', 'Accessories']
 
 function Collections() {
+    const [params] = useSearchParams()
     const [showFilter, setShowFilter] = useState(false)
-    const { products, search, showSearch } = useContext(shopDataContext)
+    const { products, settings, productsLoading, productsError, search, showSearch } = useContext(shopDataContext)
     const [filterProduct, setFilterProduct] = useState([])
     const [category, setCategory] = useState([])
     const [subCategory, setSubCategory] = useState([])
     const [sortType, setSortType] = useState("relevant")
+
+    const availableCategories = [...new Set([...CATEGORIES, ...products.map(p=>p.category).filter(Boolean)])]
+    const availableSubCategories = [...new Set([...SUB_CATEGORIES, ...products.filter(p=>!category.length || category.includes(p.category)).map(p=>p.subCategory).filter(Boolean)])]
 
     const toggleCategory = (val) => {
         setCategory(prev => prev.includes(val) ? prev.filter(i => i !== val) : [...prev, val])
@@ -25,6 +31,12 @@ function Collections() {
 
     const applyFilterAndSort = () => {
         let copy = products.slice()
+        const section = settings.homeSections?.find(s=>s.id===params.get('section'))
+        if (section) copy = copy.filter(p=>section.productIds.includes(p._id))
+ const custom = settings.customCategories?.find(c=>c.id===params.get('customCategory'))
+ if(custom) copy=copy.filter(p=>custom.productIds.includes(p._id))
+ const target=params.get('category')
+ if(target && target!=='All') copy=copy.filter(p=>p.category===target||p.subCategory===target||settings.customCategories?.some(c=>c.title===target&&c.productIds.includes(p._id)))
         if (showSearch && search) copy = copy.filter(i => i.name.toLowerCase().includes(search.toLowerCase()))
         if (category.length > 0) copy = copy.filter(i => category.includes(i.category))
         if (subCategory.length > 0) copy = copy.filter(i => subCategory.includes(i.subCategory))
@@ -37,7 +49,7 @@ function Collections() {
 
     useEffect(() => { 
         applyFilterAndSort() 
-    }, [products, category, subCategory, search, showSearch, sortType])
+    }, [products, settings, params, category, subCategory, search, showSearch, sortType])
 
     const FilterPanel = () => (
         <div className='flex flex-col gap-[20px]'>
@@ -45,7 +57,7 @@ function Collections() {
             <div>
                 <p className='text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-[10px]'>Category</p>
                 <div className='flex flex-col gap-[8px]'>
-                    {CATEGORIES.map(cat => (
+                    {availableCategories.map(cat => (
                         <label key={cat} className='flex items-center gap-[10px] cursor-pointer'>
                             <input
                                 type="checkbox"
@@ -63,7 +75,7 @@ function Collections() {
             <div>
                 <p className='text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-[10px]'>Sub-Category</p>
                 <div className='flex flex-col gap-[8px]'>
-                    {SUB_CATEGORIES.map(sub => (
+                    {availableSubCategories.map(sub => (
                         <label key={sub} className='flex items-center gap-[10px] cursor-pointer'>
                             <input
                                 type="checkbox"
@@ -94,7 +106,7 @@ function Collections() {
             {/* ── Mobile: filter bar ── */}
             <div className='lg:hidden flex items-center justify-between px-[16px] py-[12px] bg-white border-b border-gray-200 sticky top-[70px] z-[20]'>
                 <span className='text-[13px] font-bold text-gray-700 uppercase tracking-wide'>
-                    {filterProduct.length} Products
+                    {productsLoading ? 'Loading products...' : `${filterProduct.length} Products`}
                 </span>
                 <button
                     onClick={() => setShowFilter(p => !p)}
@@ -129,7 +141,7 @@ function Collections() {
                         <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-[12px] mb-[20px]'>
                             <div>
                                 <Title text1={"ALL"} text2={"COLLECTIONS"} color='text-gray-800' color2='text-black' />
-                                <p className='text-[13px] text-gray-400 -mt-2 hidden lg:block'>{filterProduct.length} products</p>
+                                <p className='text-[13px] text-gray-400 -mt-2 hidden lg:block'>{productsLoading ? 'Loading products...' : `${filterProduct.length} products`}</p>
                             </div>
                             <div className='relative w-full sm:w-auto'>
                                 <select
@@ -145,7 +157,7 @@ function Collections() {
                         </div>
 
                         {/* Grid */}
-                        {filterProduct.length === 0 ? (
+                        {productsLoading || productsError ? <ProductLoadingState /> : filterProduct.length === 0 ? (
                             <div className='flex flex-col items-center justify-center py-[80px] text-gray-400 bg-white rounded-2xl border border-gray-200'>
                                 <p className='text-[15px] font-medium'>No products found</p>
                                 <p className='text-[13px] mt-[4px]'>Try adjusting your filters</p>

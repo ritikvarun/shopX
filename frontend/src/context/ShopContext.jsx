@@ -8,6 +8,8 @@ import { toast } from 'react-toastify'
 function ShopContext({children}) {
 
     let [products,setProducts] = useState([])
+    const [productsLoading, setProductsLoading] = useState(true)
+    const [productsError, setProductsError] = useState('')
     let [search,setSearch] = useState('')
     let {userData} = useContext(userDataContext)
     let [showSearch,setShowSearch] = useState(false)
@@ -19,11 +21,16 @@ function ShopContext({children}) {
     let delivery_fee = 40;
 
     const getProducts = async () => {
+        setProductsLoading(true)
+        setProductsError('')
         try {
             let result = await axios.get(serverUrl + "/api/product/list")
             setProducts(result.data)
         } catch (error) {
             console.log(error)
+            setProductsError('Products could not be loaded. Please try again.')
+        } finally {
+            setProductsLoading(false)
         }
         
     }
@@ -38,6 +45,12 @@ function ShopContext({children}) {
     }
 
 
+    useEffect(() => {
+ const refresh = () => { if (!document.hidden) fetchSettings() }
+ const timer = setInterval(refresh, 15000)
+ window.addEventListener('focus', refresh)
+ return () => { clearInterval(timer); window.removeEventListener('focus', refresh) }
+ }, [serverUrl])
     const addtoCart = async (itemId , size) => {
        if (!size) {
       toast.error("Select Product Size");
@@ -182,6 +195,7 @@ function ShopContext({children}) {
 
 
     let value = {
+      productsLoading, productsError,
       products, currency , delivery_fee,getProducts,search,setSearch,showSearch,setShowSearch,cartItem, addtoCart, getCartCount, setCartItem ,updateQuantity,getCartAmount,loading,settings
     }
   return (

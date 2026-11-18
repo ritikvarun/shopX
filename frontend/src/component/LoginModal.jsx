@@ -4,7 +4,7 @@ import { authDataContext } from '../context/AuthContext';
 import { userDataContext } from '../context/UserContext';
 import axios from 'axios';
 import { signInWithPopup } from 'firebase/auth';
-import { auth, provider } from '../../utils/Firebase';
+import { auth, provider, googleAuthEnabled } from '../../utils/Firebase';
 import { toast } from 'react-toastify';
 import Loading from './Loading';
 import Logo from '../assets/shopX.png'
@@ -92,6 +92,7 @@ function LoginModal({ onClose, defaultMode = "login" }) {
 
     // --- GOOGLE ---
     const googleAuth = async () => {
+        if (!googleAuthEnabled) return
         setLoading(true)
         try {
             const response = await signInWithPopup(auth, provider)
@@ -106,7 +107,7 @@ function LoginModal({ onClose, defaultMode = "login" }) {
             toast.success("Google Login Successful 🎉")
             getCurrentUser()
             onClose()
-        } catch (error) {
+        } catch {
             toast.error("Google Login Failed")
         }
         setLoading(false)
@@ -168,6 +169,7 @@ function LoginModal({ onClose, defaultMode = "login" }) {
 
                 <div className='px-[28px] pb-[26px] pt-[16px]'>
                     {/* Google */}
+                    {googleAuthEnabled && <>
                     <button
                         type='button'
                         onClick={googleAuth}
@@ -186,6 +188,7 @@ function LoginModal({ onClose, defaultMode = "login" }) {
                     </div>
 
                     {/* LOGIN FORM */}
+                    </>}
                     {isLogin && (
                         <form onSubmit={handleLogin} className='flex flex-col gap-[12px]'>
                             <input

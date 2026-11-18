@@ -17,7 +17,7 @@ function Sidebar() {
         { path: '/lists', label: 'Products', icon: <FaRegListAlt /> },
         { path: '/orders', label: 'Orders', icon: <SiTicktick /> },
         { path: '/returns', label: 'Returns', icon: <TbArrowBackUp /> },
-        { path: '/banners', label: 'Site Images', icon: <FiImage /> },
+        { path: '/banners', label: 'Promotional Banners', icon: <FiImage /> },{ path: '/banner', label: 'About Image', icon: <FiImage /> },{ path: '/home-sections', label: 'Home Sections', icon: <FaRegListAlt /> },{ path: '/categories', label: 'Categories Manager', icon: <FaRegListAlt /> },
     ]
 
     return (
@@ -25,7 +25,7 @@ function Sidebar() {
             fixed w-full bottom-0 left-0 border-t flex-row justify-around py-[8px] pb-[calc(8px+env(safe-area-inset-bottom))] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]
             md:shadow-none md:w-[220px] md:min-h-[100vh] md:border-r md:border-t-0 md:top-0 md:pt-[80px] md:flex-col md:py-0 md:justify-start
         '>
-            <div className='flex flex-row w-full justify-around md:px-[16px] md:mt-[16px] md:flex-col md:gap-[4px]'>
+            <div className='flex flex-row overflow-x-auto w-full justify-around md:px-[16px] md:mt-[16px] md:flex-col md:gap-[4px]'>
                 {links.map((link) => {
                     const isActive = location.pathname === link.path
                     return (

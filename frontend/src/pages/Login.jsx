@@ -9,7 +9,7 @@ import { useContext } from 'react';
 import { authDataContext } from '../context/AuthContext';
 import axios from 'axios';
 import { signInWithPopup } from 'firebase/auth';
-import { auth, provider } from '../../utils/Firebase';
+import { auth, provider, googleAuthEnabled } from '../../utils/Firebase';
 import { userDataContext } from '../context/UserContext';
 import { toast } from 'react-toastify';
 import Loading from '../component/Loading';
@@ -54,6 +54,7 @@ function Login() {
     }
 
     const googlelogin = async () => {
+        if (!googleAuthEnabled) return
         setLoading(true)
         try {
             const response = await signInWithPopup(auth, provider)
@@ -90,12 +91,14 @@ function Login() {
     </div>
     <div className='max-w-[600px] w-[90%] h-[500px] bg-[#00000025] border-[1px] border-[#96969635] backdrop:blur-2xl rounded-lg shadow-lg flex items-center justify-center '>
         <form action="" onSubmit={handleLogin} className='w-[90%] h-[90%] flex flex-col items-center justify-start gap-[20px]'>
+            {googleAuthEnabled && <>
             <div className='w-[90%] h-[50px] bg-[#42656cae] rounded-lg flex items-center justify-center gap-[10px] py-[20px] cursor-pointer' onClick={googlelogin}>
                 <img src={google} alt="" className='w-[20px]'/> Login account with Google
             </div>
             <div className='w-[100%] h-[20px] flex items-center justify-center gap-[10px]'>
              <div className='w-[40%] h-[1px] bg-[#96969635]'></div> OR <div className='w-[40%] h-[1px] bg-[#96969635]'></div>
             </div>
+            </>}
             <div className='w-[90%] h-[400px] flex flex-col items-center justify-center gap-[15px]  relative'>
               
                  <input type="text" className='w-[100%] h-[50px] border-[2px] border-[#96969635] backdrop:blur-sm rounded-lg shadow-lg bg-transparent placeholder-[#ffffffc7] px-[20px] font-semibold' placeholder='Email' required  onChange={(e)=>setEmail(e.target.value)} value={email}/>

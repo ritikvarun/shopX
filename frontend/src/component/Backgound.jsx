@@ -25,8 +25,9 @@ function Backgound({ heroCount }) {
         settings?.homeBanner4 || back4
     ]
 
-    const slide = dynamicSlides[heroCount] || dynamicSlides[0]
-    const caption = captions[heroCount] || captions[0]
+    const banner = settings.heroBanners?.[heroCount]
+    const slide = banner?.image || dynamicSlides[heroCount] || dynamicSlides[0]
+    const caption = banner ? {tag:banner.badge, heading:banner.title, sub:banner.highlight} : captions[heroCount] || captions[0]
 
     return (
         <div className='relative w-full h-full overflow-hidden'>
@@ -56,7 +57,7 @@ function Backgound({ heroCount }) {
                 </p>
                 <button
                     className='mt-[22px] w-fit px-[28px] py-[12px] bg-white text-black font-semibold rounded-full text-[14px] hover:bg-gray-100 transition-all duration-200'
-                    onClick={() => window.location.href = '/collection'}
+                    onClick={() => window.location.href = '/collection?category=' + encodeURIComponent(banner?.target || '')}
                 >
                     Shop Now →
                 </button>

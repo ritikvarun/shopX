@@ -1,3 +1,4 @@
+import { categoryGroups, sizeGroups } from '../productOptions'
 import React, { useContext, useState } from 'react'
 import Nav from '../component/Nav'
 import Sidebar from '../component/Sidebar'
@@ -12,9 +13,13 @@ function Add() {
     let [image2, setImage2] = useState(false)
     let [image3, setImage3] = useState(false)
     let [image4, setImage4] = useState(false)
+    const [image5, setImage5] = useState(false)
+    const [sizeGroup, setSizeGroup] = useState('Clothes')
+    const [customSize, setCustomSize] = useState('')
     const [name, setName] = useState("")
     const [description, setDescription] = useState("")
     const [category, setCategory] = useState("Men")
+    const subcategories = categoryGroups.flatMap(([, options]) => Object.entries(options)).find(([key]) => key === category)?.[1] || []
     const [price, setPrice] = useState("")
     const [subCategory, setSubCategory] = useState("TopWear")
     const [bestseller, setBestSeller] = useState(false)
@@ -35,6 +40,7 @@ function Add() {
             toast.error("Select at least one size"); setLoading(false); return
         }
         try {
+            if (!Number.isFinite(Number(price)) || Number(price) <= 0) { toast.error('Enter a valid price'); setLoading(false); return }
             let formData = new FormData()
             formData.append("name", name)
             formData.append("description", description)
@@ -44,14 +50,15 @@ function Add() {
             formData.append("bestseller", bestseller)
             formData.append("sizes", JSON.stringify(sizes))
             formData.append("image1", image1)
-            formData.append("image2", image2 || image1)
-            formData.append("image3", image3 || image1)
-            formData.append("image4", image4 || image1)
+            if (image2) formData.append("image2", image2)
+            if (image3) formData.append("image3", image3)
+            if (image4) formData.append("image4", image4)
+            if (image5) formData.append("image5", image5)
             let result = await axios.post(serverUrl + "/api/product/addproduct", formData, { withCredentials: true })
             toast.success("Product Added Successfully!")
             if (result.data) {
                 setName(""); setDescription(""); setImage1(false); setImage2(false)
-                setImage3(false); setImage4(false); setPrice(""); setBestSeller(false)
+                setImage3(false); setImage4(false); setImage5(false); setCustomSize(''); setSizeGroup('Clothes'); setPrice(""); setBestSeller(false)
                 setCategory("Men"); setSubCategory("TopWear"); setSizes([])
             }
         } catch (error) {
@@ -71,7 +78,7 @@ function Add() {
                 type='button'
                 key={size}
                 onClick={() => setSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size])}
-                className={`w-[50px] h-[44px] rounded-xl text-[14px] font-semibold border transition-all
+                className={`min-w-[50px] px-3 h-[44px] rounded-xl text-[14px] font-semibold border transition-all
                     ${active ? 'bg-black text-white border-black' : 'bg-gray-50 text-gray-700 border-gray-200 hover:border-gray-400'}`}
             >
                 {size}
@@ -96,7 +103,7 @@ function Add() {
                         {/* Images */}
                         <div>
                             <div className='flex items-center justify-between mb-[6px]'>
-                                <label className={labelClass + ' mb-0'}>Product Images (Image 1 Required · 2-4 Optional)</label>
+                                <label className={labelClass + ' mb-0'}>Product Images (Image 1 Required · 2-5 Optional)</label>
                                 <span className='text-[11px] text-gray-400'>Supports PNG, JPG, WEBP</span>
                             </div>
                             <div className='flex gap-[14px] flex-wrap'>
@@ -105,6 +112,7 @@ function Add() {
                                     [image2, setImage2, 'image2', 'Image 2'],
                                     [image3, setImage3, 'image3', 'Image 3'],
                                     [image4, setImage4, 'image4', 'Image 4'],
+                                    [image5, setImage5, 'image5', 'Image 5'],
                                 ].map(([img, setImg, id, label]) => (
                                     <div key={id} className='flex flex-col items-center gap-[4px]'>
                                         <label htmlFor={id} className='cursor-pointer'>
@@ -140,21 +148,14 @@ function Add() {
                         <div className='flex gap-[20px] flex-wrap'>
                             <div className='flex-1 min-w-[160px]'>
                                 <label className={labelClass}>Category</label>
-                                <select className={inputClass} onChange={(e) => setCategory(e.target.value)} value={category}>
-                                    <option value="Men">Men</option>
-                                    <option value="Women">Women</option>
-                                    <option value="Kids">Kids</option>
-                                    <option value="Unisex">Unisex</option>
+                                <select className={inputClass} onChange={(e) => { const next=e.target.value; setCategory(next); setSubCategory(categoryGroups.flatMap(([,o])=>Object.entries(o)).find(([k])=>k===next)[1][0]) }} value={category}>
+                                    {categoryGroups.map(([group,options])=><optgroup key={group} label={group}>{Object.keys(options).map(c=><option key={c} value={c}>{c}</option>)}</optgroup>)}
                                 </select>
                             </div>
                             <div className='flex-1 min-w-[160px]'>
                                 <label className={labelClass}>Sub-Category</label>
                                 <select className={inputClass} onChange={(e) => setSubCategory(e.target.value)} value={subCategory}>
-                                    <option value="TopWear">TopWear</option>
-                                    <option value="BottomWear">BottomWear</option>
-                                    <option value="WinterWear">WinterWear</option>
-                                    <option value="Shoes">Shoes</option>
-                                    <option value="Accessories">Accessories</option>
+                                    {subcategories.map(c=><option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
                         </div>
@@ -162,17 +163,18 @@ function Add() {
                         {/* Price */}
                         <div>
                             <label className={labelClass}>Price (₹)</label>
-                            <input type="number" placeholder='e.g. 1999' className={inputClass} onChange={(e) => setPrice(e.target.value)} value={price} required />
+                            <input type="number" min="0.01" step="0.01" placeholder='e.g. 1999' className={inputClass} onChange={(e) => setPrice(e.target.value)} value={price} required />
                         </div>
 
                         {/* Sizes */}
                         <div>
-                            <label className={labelClass}>Sizes</label>
+                            <label className={labelClass}>Available Packaging & Sizes</label><p className="text-sm text-gray-500 mb-4">Select sizes, weights or packs. You can also add a custom variant.</p><div className="flex flex-wrap gap-2 mb-4">{Object.keys(sizeGroups).map(group=><button type="button" key={group} onClick={()=>setSizeGroup(group)} className={'rounded-xl px-4 py-2 border '+(sizeGroup===group?'bg-black text-white':'bg-gray-50')}>{group}</button>)}</div>
                             <div className='flex gap-[10px] flex-wrap'>
-                                {['S', 'M', 'L', 'XL', 'XXL'].map(sizeBtn)}
+                                {[...new Set([...sizeGroups[sizeGroup], ...sizes])].map(sizeBtn)}
                             </div>
                         </div>
 
+                        <div className="flex gap-3"><input aria-label="Custom variant" placeholder="Custom size, e.g. 750g" className={inputClass} value={customSize} maxLength={40} onChange={e=>setCustomSize(e.target.value)}/><button type="button" className="shrink-0 border rounded-xl px-4" onClick={()=>{const value=customSize.trim();if(value){setSizes(old=>old.includes(value)?old:[...old,value]);setCustomSize('')}}}>+ Add Variant</button></div>
                         {/* Bestseller */}
                         <div className='flex items-center gap-[10px]'>
                             <input type="checkbox" id='bestseller' className='w-[18px] h-[18px] accent-black cursor-pointer' onChange={() => setBestSeller(prev => !prev)} checked={bestseller} />
@@ -182,6 +184,7 @@ function Add() {
                         {/* Submit */}
                         <button
                             type='submit'
+                            disabled={loading}
                             className='w-fit px-[32px] h-[46px] rounded-xl bg-black text-white font-semibold text-[14px] flex items-center justify-center gap-[8px] hover:bg-gray-800 transition-all'
                         >
                             {loading ? <Loading /> : 'Add Product'}

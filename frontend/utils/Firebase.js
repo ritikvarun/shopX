@@ -11,15 +11,18 @@ const firebaseConfig = {
   appId: "1:277279979921:web:0937345435cef073848230",
   measurementId: "G-B9CZD8QMNY",
 };
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
+// Temporarily opt-in: the storefront must work without Firebase credentials.
+const googleAuthEnabled = import.meta.env.VITE_ENABLE_GOOGLE_AUTH === "true"
+  && Boolean(firebaseConfig.apiKey);
+const app = googleAuthEnabled ? initializeApp(firebaseConfig) : null;
+const auth = app ? getAuth(app) : null;
+const provider = app ? new GoogleAuthProvider() : null;
 let analytics = null;
-if (typeof window !== "undefined") {
+if (app && typeof window !== "undefined") {
   isSupported().then((supported) => {
     if (supported) {
       analytics = getAnalytics(app);
     }
   }).catch(() => {});
 }
-export { auth, provider, analytics };
+export { auth, provider, analytics, googleAuthEnabled };
